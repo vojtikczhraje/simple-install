@@ -7,25 +7,24 @@ If (-NOT ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdenti
     Break
 }
 
-<# # Update Windows
-Write-Output "Checking for Windows updates..."
-Get-WindowsUpdate
-Install-WindowsUpdate
-cls
+# Create a temp folder for addtional files
+$tempFile = "c:\temp"
+
+if (Test-Path -Path $tempFile){
+    Remove-Item -Path $tempFile -Force -Recurse -Confirm:$false | Out-Null
+    New-Item -Path  $tempFile -ItemType Directory  | Out-Null
+} else {
+    New-Item -Path $tempFile -ItemType Directory | Out-Null
+}
 
 # Install Windows Features (example: .NET Framework 3.5)
-# Write-Output "Installing Windows features..."
-# Enable-WindowsOptionalFeature -Online -FeatureName NetFx3 -All
+function Windows-features {
+    Write-Output "Installing Windows features..."
+    Enable-WindowsOptionalFeature -Online -FeatureName NetFx3 -All
+}
 
-# Disable Windows Defender (Note: Be cautious with this setting)
-Write-Output "Disabling Windows Defender..."
-Set-MpPreference -DisableRealtimeMonitoring $true
-cls #>
-
-# Install scoop and apps
-# Check if Scoop is installed by attempting to access its directory
+# Install scoop
 $scoopInstalled = Test-Path -Path "$env:USERPROFILE\scoop"
-
 if ($scoopInstalled) {
     Write-Output "info: Scoop is already installed."
 } else {
@@ -45,84 +44,71 @@ if ($scoopInstalled) {
     }
 }
 
-if($scoopInstalled){
-    # Configure repositories
-    scoop bucket add main
-    scoop bucket add versions
-    scoop bucket add extras
 
-    # Development tools
-    Write-Output "info: Installing development tools..."
-    scoop install git
-    scoop install main/python
-    scoop install main/nodejs
-    scoop install main/mingw
-    scoop install versions/vscode-insiders
-
-    # Utilities
-    Write-Output "info: Installing utilities..."
-    scoop install main/7zip
-    scoop install extras/lightshot
-
-    # Entertainment and communication
-    Write-Output "info: Installing entertainment and communication apps..."
-    scoop install extras/spotify
-    scoop install extras/qbittorrent
-    scoop install extras/discord
-    scoop install extras/steam
-
-    Write-Output "info: Applications installation completed."
-}
-
-# Define an array of service names to disable
-$servicesToDisable = @(
-    'DiagTrack',
-    'DialogBlockingService',
-    'MsKeyboardFilter',
-    'NetMsmqActivator',
-    'PcaSvc',
-    'SEMgrSvc',
-    'ShellHWDetection',
-    'shpamsvc',
-    'SysMain',
-    'Themes',
-    'TrkWks',
-    'tzautoupdate',
-    'uhssvc',
-    'W3SVC',
-    'OneSyncSvc',
-    'WdiSystemHost',
-    'WdiServiceHost',
-    'SCardSvr',
-    'ScDeviceEnum',
-    'SCPolicySvc',
-    'SensorDataService',
-    'SensrSvc',
-    'Beep',
-    'cdfs',
-    'cdrom',
-    'cnghwassist',
-    'GpuEnergyDrv',
-    'GpuEnergyDr',
-    'Telemetry',
-    'VerifierExt'
-)
-
-# Iterate over each service and disable it
-foreach ($service in $servicesToDisable) {
-    $serviceObj = Get-Service -Name $service -ErrorAction SilentlyContinue
-    if ($serviceObj) {
-        Write-Output "info: Disabling service: $service"
-        Set-Service -Name $service -StartupType Disabled
-    } else {
-        Write-Warning "Service $service not found."
+# Install apps
+function apps {
+    if($scoopInstalled){
+        # Configure repositories
+        scoop bucket add main
+        scoop bucket add versions
+        scoop bucket add extras
+    
+        # Development tools
+        Write-Output "info: Installing development tools..."
+        scoop install git
+        scoop install main/python
+        scoop install main/nodejs
+        scoop install main/mingw
+        scoop install versions/vscode-insiders
+    
+        # Utilities
+        Write-Output "info: Installing utilities..."
+        scoop install main/7zip
+        scoop install extras/lightshot
+    
+        # Entertainment and communication
+        Write-Output "info: Installing entertainment and communication apps..."
+        scoop install extras/spotify
+        scoop install extras/qbittorrent
+        scoop install extras/discord
+        scoop install extras/steam
+    
+        Write-Output "info: Applications installation completed."
     }
 }
 
-Write-Output "info: All specified services have been set to disabled."
 
 
-# Configure powerplan
+
+function firefox {
+    Write-Output "info: Installing firefox." 
+    $scriptCommand = "irm https://raw.githubusercontent.com/amitxv/firefox/main/setup.ps1 | iex"
+    Start-Process -FilePath "powershell.exe" -ArgumentList "-NoProfile", "-Command", $scriptCommand -Wait 
+}
+
+
+# Disable Services
+ function Disable-Services {
+    param (
+        [Parameter(Mandatory = $true)]
+        [string[]]$ServiceNames
+    )
+
+    foreach ($service in $ServiceNames) {
+        $serviceObj = Get-Service -Name $service -ErrorAction SilentlyContinue
+        if ($serviceObj) {
+            Write-Output "Disabling service: $service"
+            Set-Service -Name $service -StartupType Disabled -ErrorAction SilentlyContinue
+        } else {
+            Write-Warning "Service $service not found."
+        }
+    }
+
+    Write-Output "All specified services have been set to disabled."
+}
+
+# Configure Power settings
+function Power-Settings {
     # Set the active power scheme to High performance
     powercfg /setactive 8c5e7fda-e8bf-4a96-9a85-a6e23a8c635c
 
@@ -146,22 +132,31 @@ Write-Output "info: All specified services have been set to disabled."
     # Make the Power Plan Active
     powercfg /setactive scheme_current
 
-    Write-Output "info: Power plan has been set."
+    Write-Output "info: Power settings has been configured." 
+}
+
+
+
 
 # Configure the BCD Store
+function BCD-settings {
     bcdedit /set nx AlwaysOff
-
     bcdedit /set disabledynamictick yes
+    
+    Write-Output "info: BCD settings has been configured." 
+}
 
-    Write-Output "info: BCD settings has been configured."
 
 
-# Define the path for the .reg file in the Temp directory
-$regFilePath = Join-Path -Path $env:TEMP -ChildPath "settings.reg"
 
-# Define the content of the .reg file
-# TODO: Make this more effective, make it execute inside ps like command
-$regFileContent = @"
+
+function Apply-RegistrySettings {
+    param (
+        [string]$RegFilePath
+    )
+
+    # Define the content of the .reg file
+    $regFileContent = @"
 Windows Registry Editor Version 5.00
 
 ; disable windows update
@@ -498,13 +493,166 @@ Windows Registry Editor Version 5.00
 @=""
 "@
 
-# Save the content to the .reg file
-$regFileContent | Out-File -FilePath $regFilePath -Encoding UTF8
-Start-Process -FilePath "regedit.exe" -ArgumentList "/s `"$regFilePath`"" -Wait -NoNewWindow
+    # Check if the temporary directory for the .reg file exists, if not, create it
+    $tempDir = Split-Path -Path $RegFilePath
+    if (-not (Test-Path -Path $tempDir)) {
+        New-Item -Path $tempDir -ItemType Directory | Out-Null
+    }
 
-Write-Output "info: Registry changes has been completed."
+    # Save the content to the .reg file
+    $regFileContent | Out-File -FilePath $RegFilePath -Encoding UTF8
+
+    # Execute the .reg file silently
+    Start-Process -FilePath "regedit.exe" -ArgumentList "/s `"$RegFilePath`"" -Wait -NoNewWindow
+
+    Write-Output "info: Registry changes have been applied."
+}
 
 
 
 
-Write-Output "Windows setup completed!"
+function Disable-ScheduledTasksByWildcard {
+    param (
+        [Parameter(Mandatory = $true)]
+        [string[]]$Wildcards
+    )
+
+    # Retrieve all scheduled tasks
+    $allTasks = Get-ScheduledTask
+
+    foreach ($wildcard in $Wildcards) {
+        # Filter tasks by wildcard pattern
+        $filteredTasks = $allTasks | Where-Object { $_.TaskName -like "*$wildcard*" }
+
+        if ($filteredTasks.Count -eq 0) {
+            <# Write-Host "No tasks match the pattern: $wildcard" #>
+            continue
+        }
+
+        foreach ($task in $filteredTasks) {
+            # Disable each task
+            try {
+                Disable-ScheduledTask -TaskName $task.TaskName -TaskPath $task.TaskPath -Confirm:$false
+                <# Write-Host "Successfully disabled task: $($task.TaskName)" #>
+            } catch {
+                <# Write-Warning "Failed to disable task: $($task.TaskName). Error: $_" #>
+            }
+        }
+    }
+
+    Write-Output "info: Scheduled tasks were succesfully disabled."
+}
+
+function Main {
+    # Ensure the C:\temp directory is cleaned up and recreated
+    $tempFile = "C:\temp"
+    if (Test-Path -Path $tempFile) {
+        Remove-Item -Path $tempFile -Force -Recurse -Confirm:$false
+    }
+    New-Item -Path $tempFile -ItemType Directory | Out-Null
+
+    # Install windows features (NET - Framework 3.5)
+    # Windows-features
+
+    # Install package manager and applications
+    apps 
+
+    # Install firefox
+    firefox
+
+    # Disable services
+    $servicesToDisable = @(
+        'DiagTrack',
+        'DialogBlockingService',
+        'MsKeyboardFilter',
+        'NetMsmqActivator',
+        'PcaSvc',
+        'SEMgrSvc',
+        'ShellHWDetection',
+        'shpamsvc',
+        'SysMain',
+        'Themes',
+        'TrkWks',
+        'tzautoupdate',
+        'uhssvc',
+        'W3SVC',
+        'OneSyncSvc',
+        'WdiSystemHost',
+        'WdiServiceHost',
+        'SCardSvr',
+        'ScDeviceEnum',
+        'SCPolicySvc',
+        'SensorDataService',
+        'SensrSvc',
+        'Beep',
+        'cdfs',
+        'cdrom',
+        'cnghwassist',
+        'GpuEnergyDrv',
+        'GpuEnergyDr',
+        'Telemetry',
+        'VerifierExt'
+    )
+
+    # Call the function with the service names to disable
+    Disable-Services -ServiceNames $servicesToDisable
+
+    # Configure Power settings
+    Power-Settings
+
+    # Configure BCD settings
+    BCD-settings
+
+
+    # Registry settings
+    $regSettings = "C:\temp\settings.reg"
+    $regFilePath = [System.IO.Path]::ChangeExtension($regSettings, ".reg")
+    Apply-RegistrySettings -RegFilePath $regFilePath
+
+    
+    
+
+    $wildcards = @(
+        "update",
+        "helloface",
+        "customer experience improvement program",
+        "microsoft compatibility appraiser",
+        "startupapptask",
+        "dssvccleanup",
+        "bitlocker",
+        "chkdsk",
+        "data integrity scan",
+        "defrag",
+        "languagecomponentsinstaller",
+        "upnp",
+        "windows filtering platform",
+        "tpm",
+        "speech",
+        "spaceport",
+        "power efficiency",
+        "cloudexperiencehost",
+        "diagnosis",
+        "file history",
+        "bgtaskregistrationmaintenancetask",
+        "autochk\proxy",
+        "siuf",
+        "device information",
+        "edp policy manager",
+        "defender",
+        "marebackup"
+    )
+
+    # Disable schedule tasks
+    Disable-ScheduledTasksByWildcard -Wildcards $wildcards 
+
+    
+
+
+    
+
+    Write-Output "" "Windows setup completed!"
+}
+
+main
+
+
