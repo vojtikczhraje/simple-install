@@ -7,15 +7,13 @@ If (-NOT ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdenti
     Break
 }
 
-# Create a temp folder for addtional files
-$tempFile = "c:\temp"
-
-if (Test-Path -Path $tempFile){
-    Remove-Item -Path $tempFile -Force -Recurse -Confirm:$false | Out-Null
-    New-Item -Path  $tempFile -ItemType Directory  | Out-Null
-} else {
-    New-Item -Path $tempFile -ItemType Directory | Out-Null
+# Ensure the C:\temp directory is cleaned up and recreated
+$tempFile = "C:\temp"
+if (Test-Path -Path $tempFile) {
+    Remove-Item -Path $tempFile -Force -Recurse -Confirm:$false
 }
+New-Item -Path $tempFile -ItemType Directory | Out-Null
+
 
 # Install Windows Features (example: .NET Framework 3.5)
 function Windows-features {
@@ -23,30 +21,46 @@ function Windows-features {
     Enable-WindowsOptionalFeature -Online -FeatureName NetFx3 -All
 }
 
-# Install scoop
-$scoopInstalled = Test-Path -Path "$env:USERPROFILE\scoop"
-if ($scoopInstalled) {
-    Write-Output "info: Scoop is already installed."
-} else {
-    Write-Output "info: Scoop is not installed, installing now..."
+function Visual-Cpp-Redistributable {
+    $url = "https://github.com/abbodi1406/vcredist/releases/download/v0.79.0/VisualCppRedist_AIO_x86_x64.exe"
+    $path = Join-Path $tempFile "VisualCppRedist_AIO_x86_x64.exe"
+    Invoke-WebRequest -Uri $url -OutFile $path
 
-    iex "& {$(irm get.scoop.sh)} -RunAsAdmin"
+    Start-Process -FilePath $path -ArgumentList "/ai /gm2" -Wait
+}
 
-    # Update the check for Scoop installation after the installation attempt
-    $scoopInstalled = Test-Path -Path "$env:USERPROFILE\scoop"
 
-    if ($scoopInstalled) {
-        Write-Output "info: Scoop has been successfully installed."
-    } else {
-        Write-Output "info: Scoop installation failed."
-        # Exit the script if Scoop couldn't be installed
-        exit
-    }
+
+# install scoop
+function scoop {
+
+    
 }
 
 
 # Install apps
 function apps {
+    $scoopInstalled = Test-Path -Path "$env:USERPROFILE\scoop"
+    if ($scoopInstalled) {
+        Write-Output "info: Scoop is already installed."
+    } else {
+        Write-Output "info: Scoop is not installed, installing now..."
+    
+        iex "& {$(irm get.scoop.sh)} -RunAsAdmin"
+    
+        # Update the check for Scoop installation after the installation attempt
+        $scoopInstalled = Test-Path -Path "$env:USERPROFILE\scoop"
+    
+        if ($scoopInstalled) {
+            Write-Output "info: Scoop has been successfully installed."
+        } else {
+            Write-Output "info: Scoop installation failed."
+            # Exit the script if Scoop couldn't be installed
+            exit
+        }
+    }
+
+    $scoopInstalled = Test-Path -Path "$env:USERPROFILE\scoop"
     if($scoopInstalled){
         # Configure repositories
         scoop bucket add main
@@ -544,15 +558,14 @@ function Disable-ScheduledTasksByWildcard {
 }
 
 function Main {
-    # Ensure the C:\temp directory is cleaned up and recreated
-    $tempFile = "C:\temp"
-    if (Test-Path -Path $tempFile) {
-        Remove-Item -Path $tempFile -Force -Recurse -Confirm:$false
-    }
-    New-Item -Path $tempFile -ItemType Directory | Out-Null
-
     # Install windows features (NET - Framework 3.5)
     # Windows-features
+
+    # Install Visual C++ Redistributable
+    Visual-Cpp-Redistributable
+
+    # Install scoop
+    scoop
 
     # Install package manager and applications
     apps 
