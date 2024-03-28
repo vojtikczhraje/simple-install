@@ -22,19 +22,12 @@ function Windows-features {
 }
 
 function Visual-Cpp-Redistributable {
+    Write-Output "info: Installing Visual C++ Redistributable." 
     $url = "https://github.com/abbodi1406/vcredist/releases/download/v0.79.0/VisualCppRedist_AIO_x86_x64.exe"
     $path = Join-Path $tempFile "VisualCppRedist_AIO_x86_x64.exe"
     Invoke-WebRequest -Uri $url -OutFile $path
 
     Start-Process -FilePath $path -ArgumentList "/ai /gm2" -Wait
-}
-
-
-
-# install scoop
-function scoop {
-
-    
 }
 
 
@@ -120,6 +113,39 @@ function firefox {
 
     Write-Output "All specified services have been set to disabled."
 }
+
+# TODO: finish debloat script
+function FunctionName {
+    $servicesToDisable = @(
+        '3DBuilder',
+        'bing',
+        'bingfinance',
+        'bingsports',
+        'BingWeather',
+        'CommsPhone',
+        'Drawboard PDF',
+        'Facebook',
+        'Getstarted',
+        'Microsoft.Messaging',
+        'MicrosoftOfficeHub',
+        'Office.OneNote',
+        'OneNote',
+        'people',
+        'SkypeApp',
+        'solit',
+        'Sway',
+        'Twitter',
+        'WindowsAlarms',
+        'WindowsPhone',
+        'WindowsMaps',
+        'WindowsPhone',
+        'WindowsFeedbackHub',
+        'WindowsSoundRecorder',
+        'windowscommunicationsapps',
+        'zune'
+    )
+}
+
 
 # Configure Power settings
 function Power-Settings {
@@ -564,8 +590,6 @@ function Main {
     # Install Visual C++ Redistributable
     Visual-Cpp-Redistributable
 
-    # Install scoop
-    scoop
 
     # Install package manager and applications
     apps 
