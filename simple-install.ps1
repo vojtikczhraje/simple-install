@@ -20,7 +20,7 @@ cls
 # Disable Windows Defender (Note: Be cautious with this setting)
 Write-Output "Disabling Windows Defender..."
 Set-MpPreference -DisableRealtimeMonitoring $true
-cls
+cls #>
 
 # Install scoop and apps
 # Check if Scoop is installed by attempting to access its directory
@@ -72,7 +72,7 @@ if($scoopInstalled){
     scoop install extras/steam
 
     Write-Output "info: Applications installation completed."
-} #>
+}
 
 # Define an array of service names to disable
 $servicesToDisable = @(
