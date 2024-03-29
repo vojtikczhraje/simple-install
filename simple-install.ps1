@@ -632,9 +632,6 @@ function Main {
     $regFilePath = [System.IO.Path]::ChangeExtension($regSettings, ".reg")
     Apply-RegistrySettings -RegFilePath $regFilePath
 
-    
-    
-
     $wildcards = @(
         "update",
         "helloface",
