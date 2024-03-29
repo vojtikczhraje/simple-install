@@ -14,13 +14,13 @@ if (Test-Path -Path $tempFile) {
 }
 New-Item -Path $tempFile -ItemType Directory | Out-Null
 
-
 # Install Windows Features (example: .NET Framework 3.5)
 function Windows-features {
     Write-Output "Installing Windows features..."
     Enable-WindowsOptionalFeature -Online -FeatureName NetFx3 -All
 }
 
+# Install Visual C++ Redistributable
 function Visual-Cpp-Redistributable {
     Write-Output "info: Installing Visual C++ Redistributable." 
     $url = "https://github.com/abbodi1406/vcredist/releases/download/v0.79.0/VisualCppRedist_AIO_x86_x64.exe"
@@ -30,8 +30,7 @@ function Visual-Cpp-Redistributable {
     Start-Process -FilePath $path -ArgumentList "/ai /gm2" -Wait
 }
 
-
-# Install apps
+# Install scoop(package manager), apps
 function apps {
     $scoopInstalled = Test-Path -Path "$env:USERPROFILE\scoop"
     if ($scoopInstalled) {
@@ -84,17 +83,14 @@ function apps {
     }
 }
 
-
-
-
+# Install firefox
 function firefox {
     Write-Output "info: Installing firefox." 
     $scriptCommand = "irm https://raw.githubusercontent.com/amitxv/firefox/main/setup.ps1 | iex"
     Start-Process -FilePath "powershell.exe" -ArgumentList "-NoProfile", "-Command", $scriptCommand -Wait 
 }
 
-
-# Disable Services
+# Disable windows bloat services
  function Disable-Services {
     param (
         [Parameter(Mandatory = $true)]
@@ -146,8 +142,7 @@ function FunctionName {
     )
 }
 
-
-# Configure Power settings
+# Configure power settings
 function Power-Settings {
     # Set the active power scheme to High performance
     powercfg /setactive 8c5e7fda-e8bf-4a96-9a85-a6e23a8c635c
@@ -175,10 +170,7 @@ function Power-Settings {
     Write-Output "info: Power settings has been configured." 
 }
 
-
-
-
-# Configure the BCD Store
+# Configure the BCD store
 function BCD-settings {
     bcdedit /set nx AlwaysOff
     bcdedit /set disabledynamictick yes
@@ -186,10 +178,7 @@ function BCD-settings {
     Write-Output "info: BCD settings has been configured." 
 }
 
-
-
-
-
+# Create settings.reg and apply it
 function Apply-RegistrySettings {
     param (
         [string]$RegFilePath
@@ -548,9 +537,7 @@ Windows Registry Editor Version 5.00
     Write-Output "info: Registry changes have been applied."
 }
 
-
-
-
+# Disable scheduled tasks
 function Disable-ScheduledTasksByWildcard {
     param (
         [Parameter(Mandatory = $true)]
@@ -583,13 +570,13 @@ function Disable-ScheduledTasksByWildcard {
     Write-Output "info: Scheduled tasks were succesfully disabled."
 }
 
+# All functions are ran in main function 
 function Main {
     # Install windows features (NET - Framework 3.5)
     # Windows-features
 
     # Install Visual C++ Redistributable
     Visual-Cpp-Redistributable
-
 
     # Install package manager and applications
     apps 
@@ -640,7 +627,6 @@ function Main {
     # Configure BCD settings
     BCD-settings
 
-
     # Registry settings
     $regSettings = "C:\temp\settings.reg"
     $regFilePath = [System.IO.Path]::ChangeExtension($regSettings, ".reg")
@@ -682,14 +668,10 @@ function Main {
     # Disable schedule tasks
     Disable-ScheduledTasksByWildcard -Wildcards $wildcards 
 
-    
-
-
-    
-
     Write-Output "" "Windows setup completed!"
 }
 
+# execute main function
 main
 
 
