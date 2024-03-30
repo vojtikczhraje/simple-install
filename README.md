@@ -1,6 +1,6 @@
 # simple-install
-- powershell script thats makes installation of windows easier
+- powershell script thats makes setup of windows easier
 
 ## Resources
-- [PC-Tunning]()
-- [Vitality]()
+- [PC-Tunning](https://github.com/amitxv/PC-Tuning)
+- [Vitality](https://github.com/vojtikczhraje/Vitality)
