@@ -1,5 +1,3 @@
-# PowerShell Script Template for Windows Setup
-
 # Run as Administrator check
 If (-NOT ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator"))
 {
