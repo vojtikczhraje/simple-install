@@ -1,0 +1,15 @@
+Windows Registry Editor Version 5.00
+
+; set keyboarddataqueuesize to 50 dec
+[HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\services\kbdclass\Parameters]
+"KeyboardDataQueueSize"=dword:00000032
+
+; set mousedataqueuesize to 50 dec
+[HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\services\mouclass\Parameters]
+"MouseDataQueueSize"=dword:00000032
+
+; disable pointer acceleration
+[HKEY_CURRENT_USER\Control Panel\Mouse]
+"MouseSpeed"="0"
+"MouseThreshold1"="0"
+"MouseThreshold2"="0"
