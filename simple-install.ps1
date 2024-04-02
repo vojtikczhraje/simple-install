@@ -12,7 +12,7 @@ function Admin-Check {
 function Create-TempFolder{
     $tempFile = "C:\temp"
     if (Test-Path -Path $tempFile) {
-        Remove-Item -Path $tempFile -Force -Recurse -Confirm:$false
+        #ove-Item -Path $tempFile -Force -Recurse -Confirm:$false
     }
     New-Item -Path $tempFile -ItemType Directory | Out-Null
 
@@ -122,16 +122,16 @@ function firefox {
     Start-Process -FilePath "powershell.exe" -ArgumentList "-NoProfile", "-Command", $scriptCommand -Wait 
 }
 
-function Remove-Apps {
+function Remove-Appsove-Apps {
     param (
         [string[]]$AppList
     )
 
-    Write-Output "info: removing unwatend Apps"
+    Write-Output "info: #oving unwatend Apps"
 
     foreach($App in $AppList) {
         Get-AppxPackage "*$App*" | Remove-AppxPackage -AllUsers -ErrorAction 'SilentlyContinue' | Out-Null
-        Write-Output "removing: $App" 
+        Write-Output "#oving: $App" 
     }
 }
 
@@ -153,38 +153,6 @@ function Remove-Apps {
     }
 
     Write-Output "All specified services have been set to disabled."
-}
-
-# TODO: finish debloat script
-function FunctionName {
-    $servicesToDisable = @(
-        '3DBuilder',
-        'bing',
-        'bingfinance',
-        'bingsports',
-        'BingWeather',
-        'CommsPhone',
-        'Drawboard PDF',
-        'Facebook',
-        'Getstarted',
-        'Microsoft.Messaging',
-        'MicrosoftOfficeHub',
-        'Office.OneNote',
-        'OneNote',
-        'people',
-        'SkypeApp',
-        'solit',
-        'Sway',
-        'Twitter',
-        'WindowsAlarms',
-        'WindowsPhone',
-        'WindowsMaps',
-        'WindowsPhone',
-        'WindowsFeedbackHub',
-        'WindowsSoundRecorder',
-        'windowscommunicationsapps',
-        'zune'
-    )
 }
 
 # Configure power settings
@@ -212,8 +180,40 @@ function Power-Settings {
 
 # Configure the BCD store
 function BCD-settings {
-    bcdedit /set nx AlwaysOff
-    bcdedit /set disabledynamictick yes
+    #  Disables boot graphics.
+    bcdedit /set bootux disabled | Out-Null
+
+    # Set Boot Menu to Standard Instead Of Legacy
+    bcdedit /set bootmenupolicy standard | Out-Null
+
+    # Disable Hyper-V
+    bcdedit /set hypervisorlaunchtype off | Out-Null
+
+    # Disable TPM
+    bcdedit /set tpmbootentropy ForceDisable | Out-Null
+    
+    # Enable Quietboot
+    bcdedit /set quietboot yes | Out-Null
+
+    # Avoid the use of uncontiguous portions of low-memory from the OS
+    bcdedit /set firstmegabytepolicy UseAll >nul 2>&1
+    bcdedit /set avoidlowmemory 0x8000000 >nul 2>&1
+    bcdedit /set nolowmem Yes >nul 2>&1
+
+    # Disable Some Kernel Memory Mitigations
+    bcdedit /set allowedinmemorysettings 0x0 >nul 2>&1
+    bcdedit /set isolatedcontext No >nul 2>&1
+ 
+    # Disable DMA Memory Protection And Cores Isolation
+    bcdedit /set vsmlaunchtype Off >nul 2>&1
+    bcdedit /set vm No >nul 2>&1
+
+    # Enable X2Apic And Enable Memory Mapping
+    bcdedit /set x2apicpolicy Enable >nul 2>&1
+    bcdedit /set configaccesspolicy Default >nul 2>&1
+    bcdedit /set MSI Default >nul 2>&1
+    bcdedit /set usephysicaldestination No >nul 2>&1
+    bcdedit /set usefirmwarepcisettings No >nul 2>&1
     
     Write-Output "info: BCD settings has been configured." 
 }
@@ -376,9 +376,9 @@ Windows Registry Editor Version 5.00
 [HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Multimedia\SystemProfile]
 "SystemResponsiveness"=dword:0000000a
 
-; disable remote assistance
+; disable #ote assistance
 
-[HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Remote Assistance]
+[HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\#ote Assistance]
 "fAllowToGetHelp"=dword:00000000
 
 ; show file extensions
@@ -642,7 +642,7 @@ function taskbar-settings {
 
 function disable-activity-history {
     Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer" -Name "ShowRecent" -Value 0 -Type DWord -Force | Out-Null
-    Remove-Item -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\HomeFolderDesktop\NameSpace\DelegateFolders\{3134ef9c-6b18-4996-ad04-ed5912e00eb5}" -Force | Out-Null
+    #ove-Item -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\HomeFolderDesktop\NameSpace\DelegateFolders\{3134ef9c-6b18-4996-ad04-ed5912e00eb5}" -Force | Out-Null
     New-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\System" -Name "EnableActivityFeed" -Value 0 -PropertyType DWord -Force | Out-Null
     New-ItemProperty -Path "HKCU:\SOFTWARE\Policies\Microsoft\Windows\System" -Name "EnableActivityFeed" -Value 0 -PropertyType DWord -Force | Out-Null
     New-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\System" -Name "PublishUserActivities" -Value 0 -PropertyType DWord -Force | Out-Null
@@ -701,7 +701,7 @@ function Main {
     # Install firefox
     firefox
 
-    # Remove bloated apps
+    # #ove bloated apps
     $AppsToRemove = @(
         'Microsoft.3DBuilder',
     	'Microsoft.Microsoft3DViewer',
