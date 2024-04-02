@@ -1,8 +1,11 @@
 # Run as Administrator check
-If (-NOT ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator"))
-{
-    Write-Warning "error: Script is not runned as administrator"
-    Break
+function Admin-Check {
+    If (-NOT ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator"))
+    {
+        Write-Warning "error: Script is not runned as administrator"
+        Break
+    }
+    
 }
 
 # Ensure the C:\temp directory is cleaned up and recreated
@@ -608,6 +611,9 @@ function Disable-ScheduledTasksByWildcard {
 
 # All functions are ran in main function 
 function Main {
+    # Admin check
+    Admin-Check
+
     # Create temp folder
     Create-TempFolder
 
@@ -618,16 +624,16 @@ function Main {
     Install-WindowsUpdates
 
     # Install windows features (NET - Framework 3.5)
-    # Windows-features
+    Windows-features
 
     # Install Visual C++ Redistributable
-    # Visual-Cpp-Redistributable
+    Visual-Cpp-Redistributable
 
     # Install package manager and applications
-    # apps 
+    apps 
 
     # Install firefox
-    # firefox
+    firefox
 
     # Remove bloated apps
     $AppsToRemove = @(
