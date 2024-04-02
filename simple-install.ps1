@@ -6,15 +6,44 @@ If (-NOT ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdenti
 }
 
 # Ensure the C:\temp directory is cleaned up and recreated
-$tempFile = "C:\temp"
-if (Test-Path -Path $tempFile) {
-    Remove-Item -Path $tempFile -Force -Recurse -Confirm:$false
+function Create-TempFolder{
+    $tempFile = "C:\temp"
+    if (Test-Path -Path $tempFile) {
+        Remove-Item -Path $tempFile -Force -Recurse -Confirm:$false
+    }
+    New-Item -Path $tempFile -ItemType Directory | Out-Null
+
 }
-New-Item -Path $tempFile -ItemType Directory | Out-Null
+
+# Needed to get the Windows Update PS Module
+function Install-NuGET {
+    Install-PackageProvider -Name NuGet -Force | Out-Null
+}
+
+# Install Windows Updates
+function Install-WindowsUpdates {
+
+    try {
+        Write-Output "info: Running Windows Update"
+	
+        # Windows Update PS Module
+        Install-Module -Name PSWindowsUpdate -Force | Out-Null
+    
+        # Get all Updates
+        Get-WindowsUpdate -Confirm -AcceptAll | Out-Null
+    
+        # Do all upgrades
+        Install-WindowsUpdate -MicrosoftUpdate -AcceptAll -Confirm -IgnoreReboot | Out-Null
+    }
+    catch {
+        Write-Warning "error with updating windows"
+    }
+
+}
 
 # Install Windows Features (example: .NET Framework 3.5)
 function Windows-features {
-    Write-Output "Installing Windows features..."
+    Write-Output "info: Installing Windows features..."
     Enable-WindowsOptionalFeature -Online -FeatureName NetFx3 -All
 }
 
@@ -56,6 +85,7 @@ function apps {
         scoop bucket add main
         scoop bucket add versions
         scoop bucket add extras
+        scoop bucket add games
     
         # Development tools
         Write-Output "info: Installing development tools..."
@@ -63,19 +93,19 @@ function apps {
         scoop install main/python
         scoop install main/nodejs
         scoop install main/mingw
-        scoop install versions/vscode-insiders
+        sscoop install extras/vscode
     
         # Utilities
         Write-Output "info: Installing utilities..."
         scoop install main/7zip
-        scoop install extras/lightshot
+        scoop install versions/lightshot
     
         # Entertainment and communication
         Write-Output "info: Installing entertainment and communication apps..."
         scoop install extras/spotify
         scoop install extras/qbittorrent
         scoop install extras/discord
-        scoop install extras/steam
+        scoop install games/steam
     
         Write-Output "info: Applications installation completed."
     }
@@ -88,6 +118,19 @@ function firefox {
     Start-Process -FilePath "powershell.exe" -ArgumentList "-NoProfile", "-Command", $scriptCommand -Wait 
 }
 
+function Remove-Apps {
+    param (
+        [string[]]$AppList
+    )
+
+    Write-Output "info: removing unwatend Apps"
+
+    foreach($App in $AppList) {
+        Get-AppxPackage "*$App*" | Remove-AppxPackage -AllUsers -ErrorAction 'SilentlyContinue' | Out-Null
+        Write-Output "removing: $App" 
+    }
+}
+
 # Disable windows bloat services
  function Disable-Services {
     param (
@@ -98,7 +141,7 @@ function firefox {
     foreach ($service in $ServiceNames) {
         $serviceObj = Get-Service -Name $service -ErrorAction SilentlyContinue
         if ($serviceObj) {
-            Write-Output "Disabling service: $service"
+            Write-Output "disabling service: $service"
             Set-Service -Name $service -StartupType Disabled -ErrorAction SilentlyContinue
         } else {
             Write-Warning "Service $service not found."
@@ -142,28 +185,23 @@ function FunctionName {
 
 # Configure power settings
 function Power-Settings {
-    # Set the active power scheme to High performance
-    powercfg /setactive 8c5e7fda-e8bf-4a96-9a85-a6e23a8c635c
+    # Set High Performance profile
+    powercfg.exe /setactive 8c5e7fda-e8bf-4a96-9a85-a6e23a8c635c
+    
+    # Disable monitor timeout
+    powercfg.exe /change monitor-timeout-ac 0
+    powercfg.exe /change monitor-timeout-dc 0
 
-    # Remove the Balanced power scheme
-    powercfg /delete 381b4222-f694-41f0-9685-ff5bb260df2e
+    # Disable standby timeout
+    powercfg.exe /change standby-timeout-ac 0
+    powercfg.exe /change standby-timeout-dc 0
 
-    # Remove the Power Saver power scheme
-    powercfg /delete a1841308-3541-4fab-bc81-f71556f20b4a
+    # Disable hibernate timeout
+    powercfg.exe /change hibernate-timeout-ac 0
+    powercfg.exe /change hibernate-timeout-dc 0
 
-    # USB 3 Link Power Management - Off
-    powercfg /setacvalueindex scheme_current 2a737441-1930-4402-8d77-b2bebba308a3   d4e98f31-5ffe-4ce1-be31-1b38b384c009 0
-
-    # USB Selective Suspend - Disabled
-    powercfg /setacvalueindex scheme_current 2a737441-1930-4402-8d77-b2bebba308a3   48e6b7a6-50f5-4782-a5d4-53bb8f07e226 0
-
-    # CPU Parking - Disabled
-    powercfg /setacvalueindex scheme_current 54533251-82be-4824-96c1-47b60b740d00   0cc5b647-c1df-4637-891a-dec35c318583 100
-
-    powercfg /setacvalueindex scheme_current 54533251-82be-4824-96c1-47b60b740d00   0cc5b647-c1df-4637-891a-dec35c318584 100
-
-    # Make the Power Plan Active
-    powercfg /setactive scheme_current
+    # Disable hibernate
+    powercfg.exe /hibernate off
 
     Write-Output "info: Power settings has been configured." 
 }
@@ -570,17 +608,162 @@ function Disable-ScheduledTasksByWildcard {
 
 # All functions are ran in main function 
 function Main {
+    # Create temp folder
+    Create-TempFolder
+
+    # Needed to get the Windows Update PS Module
+    Install-NuGET
+
+    # Install Windows update
+    Install-WindowsUpdates
+
     # Install windows features (NET - Framework 3.5)
     # Windows-features
 
     # Install Visual C++ Redistributable
-    Visual-Cpp-Redistributable
+    # Visual-Cpp-Redistributable
 
     # Install package manager and applications
-    apps 
+    # apps 
 
     # Install firefox
-    firefox
+    # firefox
+
+    # Remove bloated apps
+    $AppsToRemove = @(
+        'Microsoft.3DBuilder',
+    	'Microsoft.Microsoft3DViewer',
+    	'Microsoft.Print3D',
+    	'Microsoft.Appconnector',
+    	'Microsoft.BingFinance',
+    	'Microsoft.BingNews',
+    	'Microsoft.BingSports',
+    	'Microsoft.BingTranslator',
+    	'Microsoft.BingWeather',
+    	'Microsoft.BingFoodAndDrink',
+    	'Microsoft.BingTravel',
+    	'Microsoft.BingHealthAndFitness',
+    	'Microsoft.FreshPaint',
+    	'Microsoft.MicrosoftOfficeHub',
+    	'Microsoft.WindowsFeedbackHub',
+    	'Microsoft.MicrosoftSolitaireCollection',
+    	'Microsoft.MicrosoftPowerBIForWindows',
+    	'Microsoft.MinecraftUWP',
+    	'Microsoft.MicrosoftStickyNotes',
+    	'Microsoft.NetworkSpeedTest',
+    	'Microsoft.Office.OneNote',
+    	'Microsoft.OneConnect',
+    	'Microsoft.People',
+    	'Microsoft.SkypeApp',
+    	'Microsoft.Wallet',
+    	'Microsoft.WindowsAlarms',
+    	'Microsoft.WindowsCamera',
+    	'Microsoft.windowscommunicationsapps',
+    	'Microsoft.WindowsMaps',
+    	'Microsoft.WindowsPhone',
+    	'Microsoft.WindowsSoundRecorder',
+    	'Microsoft.XboxApp',
+    	'Microsoft.XboxGameOverlay',
+    	'Microsoft.XboxIdentityProvider',
+    	'Microsoft.XboxSpeechToTextOverlay',
+    	'Microsoft.ZuneMusic',
+    	'Microsoft.ZuneVideo',
+    	'Microsoft.CommsPhone',
+    	'Microsoft.ConnectivityStore',
+    	'Microsoft.GetHelp',
+    	'Microsoft.Getstarted',
+    	'Microsoft.Messaging',
+    	'Microsoft.Office.Sway',
+    	'Microsoft.WindowsReadingList',
+    	'9E2F88E3.Twitter',
+    	'PandoraMediaInc.29680B314EFC2',
+    	'Flipboard.Flipboard',
+    	'ShazamEntertainmentLtd.Shazam',
+    	'king.com.CandyCrushSaga',
+    	'king.com.CandyCrushSodaSaga',
+    	'king.com.*',
+    	'ClearChannelRadioDigital.iHeartRadio',
+    	'4DF9E0F8.Netflix',
+    	'6Wunderkinder.Wunderlist',
+    	'Drawboard.DrawboardPDF',
+    	'2FE3CB00.PicsArt-PhotoStudio',
+    	'D52A8D61.FarmVille2CountryEscape',
+    	'TuneIn.TuneInRadio',
+    	'GAMELOFTSA.Asphalt8Airborne',
+    	'TheNewYorkTimes.NYTCrossword',
+    	'DB6EA5DB.CyberLinkMediaSuiteEssentials',
+    	'Facebook.Facebook',
+    	'flaregamesGmbH.RoyalRevolt2',
+    	'Playtika.CaesarsSlotsFreeCasino',
+    	'A278AB0D.MarchofEmpires',
+    	'KeeperSecurityInc.Keeper',
+    	'ThumbmunkeysLtd.PhototasticCollage',
+    	'XINGAG.XING',
+    	'89006A2E.AutodeskSketchBook',
+    	'D5EA27B7.Duolingo-LearnLanguagesforFree',
+    	'46928bounde.EclipseManager',
+    	'ActiproSoftwareLLC.562882FEEB491',
+    	'DolbyLaboratories.DolbyAccess',
+    	'A278AB0D.DisneyMagicKingdoms',
+    	'WinZipComputing.WinZipUniversal',
+    	'Microsoft.ScreenSketch',
+    	'Microsoft.XboxGamingOverlay',
+    	'Microsoft.Xbox.TCUI',
+    	'Microsoft.YourPhone',
+    	'HP Wolf Security',
+    	'HP Wolf Security Application Support for Sure Sense',
+    	'HP Wolf Security Application Support for Windows',
+    	'Hp Wolf Security - Console',
+    	'ExpressVPN',
+    	'ACGMediaPlayer',
+        'ActiproSoftwareLLC',
+        'AdobePhotoshopExpress',
+        'Amazon.com.Amazon',
+        'Asphalt8Airborne',
+        'AutodeskSketchBook',
+        'BubbleWitch3Saga',
+        'CaesarsSlotsFreeCasino',
+        'CandyCrush',
+        'COOKINGFEVER',
+        'CyberLinkMediaSuiteEssentials';
+        'DisneyMagicKingdoms',
+        'Dolby',
+        'DrawboardPDF',
+        'Duolingo-LearnLanguagesforFree',
+        'EclipseManager',
+        'Facebook',
+        'FarmVille2CountryEscape',
+        'FitbitCoach',
+        'Flipboard',
+        'HiddenCity',
+        'Hulu',
+    	'iHeartRadio',
+        'Keeper',
+        'LinkedInforWindows',
+        'MarchofEmpires',
+        'Netflix',
+        'NYTCrossword',
+        'OneCalendar',
+        'PandoraMediaInc',
+        'PhototasticCollage',
+        'PicsArt-PhotoStudio',
+        'Plex',
+        'PolarrPhotoEditorAcademicEdition',
+        'RoyalRevolt',
+        'Shazam',
+        'Sidia.LiveWallpaper',
+        'SlingTV',
+        'Speed Test',
+        'Sway',
+        'TuneInRadio',
+        'Twitter',
+        'Viber',
+        'WinZipUniversal',
+        'Wunderlist',
+        'XING'
+    )
+
+    Remove-Apps -AppList $AppsToRemove
 
     # Disable services
     $servicesToDisable = @(
