@@ -1,21 +1,27 @@
 # simple-install
-- powershell script thats makes setup of windows easier
+- PowerShell script that makes setup of Windows easier.
 
 ## Features
-- Windows update
-- Install Windows features (NET Framework 3.5)
-- Install Visual C++ Redistributable
-- Install package manager and applications
-- Install firefox
-- Remove bloat apps
-- Disable bloat services
-- Configure power settings (power plan)
-- Configure boot options
-- Change windows settings
-- Disable scheduled tasks
-- Configure taskbar
+> [!WARNING]  
+> Please be aware, the following applications are installed automatically without permission: <br />
+> `git, python, nodejs, mingw, vscode, 7zip, lightshot, spotify, qbittorrent, discord, steam`
+- Installs Windows update
+- Installs Windows features (NET Framework 3.5)
+- Installs Visual C++ Redistributable
+- Installs package manager and applications
+- Installs Firefox
+- Removes bloat apps
+- Disables bloat services
+- Configures power settings (power plan)
+- Configures boot options
+- Changes Windows settings
+- Disables scheduled tasks
+- Configures taskbar
+- Disables memory compression
 
 ## Resources
+> [!NOTE]  
+> I would like to acknowledge that not all the work presented here is solely my own. Below, I've listed credits to the authors of certain contributions.
 - [PC-Tunning](https://github.com/amitxv/PC-Tuning)
 - [Vitality](https://github.com/vojtikczhraje/Vitality)
 - [WinPostInstall](https://github.com/jhx0/WinPostInstall)
