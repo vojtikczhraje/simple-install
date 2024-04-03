@@ -620,6 +620,81 @@ Windows Registry Editor Version 5.00
 
 [HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\EdgeUI]
 "DisableMFUTracking"=dword:00000001
+
+; realtime csrss
+
+[HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options\csrss.exe\PerfOptions]
+"CpuPriorityClass"=dword:00000004
+"IoPriority"=dword:00000003
+
+; disable spectre meltdown
+
+[HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Session Manager\Memory Management]
+"FeatureSettings"=dword:00000001
+"FeatureSettingsOverride"=dword:00000003
+"FeatureSettingsOverrideMask"=dword:00000003
+
+; disable powerthrottling
+
+[HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Session Manager]
+"CoalescingTimerInterval"=dword:00000000
+
+[HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Session Manager\Power]
+"CoalescingTimerInterval"=dword:00000000
+
+[HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Session Manager\Memory Management]
+"CoalescingTimerInterval"=dword:00000000
+
+[HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Session Manager\kernel]
+"CoalescingTimerInterval"=dword:00000000
+
+[HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Session Manager\Executive]
+"CoalescingTimerInterval"=dword:00000000
+
+[HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Power\ModernSleep]
+"CoalescingTimerInterval"=dword:00000000
+
+[HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Power]
+"CoalescingTimerInterval"=dword:00000000
+"PlatformAoAcOverride"=dword:00000000
+"EnergyEstimationEnabled"=dword:00000000
+"EventProcessorEnabled"=dword:00000000
+"CsEnabled"=dword:00000000
+
+[HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Power\PowerThrottling]
+"PowerThrottlingOff"=dword:00000001
+
+; auto reboot on crash
+
+[HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\CrashControl]
+"AutoReboot"=dword:00000001
+
+; disable windows tips
+[HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager]
+"SubscribedContent-338393Enabled"=dword:00000000
+
+; disable start menu suggestions
+"SystemPaneSuggestionsEnabled"=dword:00000000
+
+; disable lock screen suggestions (Ads)
+"SubscribedContent-310093Enabled"=dword:00000000
+"RotatingLockScreenOverlayEnabled"=dword:00000000
+"RotatingLockScreenEnabled"=dword:00000000
+
+; disable advertising id
+[HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\AdvertisingInfo]
+"Enabled"=dword:00000000
+
+; disable app suggestions
+[HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\CloudContent]
+"DisableWindowsConsumerFeatures"=dword:00000001
+
+; show hidden files
+
+[HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced]
+"Hidden"=dword:00000001
+"ShowSuperHidden"=dword:00000001
+
 "@
 
     # Check if the temporary directory for the .reg file exists, if not, create it
@@ -700,6 +775,30 @@ function taskbar-settings {
     Write-Output "info: Taskbar have been cleaned"
 }
 
+function Disable-ProcessMitigations {
+    # Disable process mitigations
+    Set-ProcessMitigation -System -Disable CFG | Out-Null
+
+    # Get current mask
+    $regPath = "HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\kernel"
+    $regName = "MitigationAuditOptions"
+    $mitigationMask = (Get-ItemProperty -Path $regPath -Name $regName).MitigationAuditOptions
+    
+    # Ensure mitigationMask is a string for replacement operation
+    $mitigationMaskStr = [BitConverter]::ToString($mitigationMask).Replace("-", "")
+
+    # Set all values in current mask to 2
+    0..9 | ForEach-Object {
+        $mitigationMaskStr = $mitigationMaskStr.Replace("$_", "2")
+    }
+
+    # Convert the modified string back to byte array
+    $modifiedMask = [byte[]] -split ($mitigationMaskStr -replace '..', '0x$& ')
+    
+    # Apply modified mask to kernel
+    Set-ItemProperty -Path $regPath -Name "MitigationOptions" -Value $modifiedMask -Type Binary -Force
+    Set-ItemProperty -Path $regPath -Name "MitigationAuditOptions" -Value $modifiedMask -Type Binary -Force
+}
 
 # All functions are ran in main function 
 function Main {
@@ -946,6 +1045,12 @@ function Main {
 
     # Configure taskbar
     taskbar-settings
+
+    # Disable Process Mitigations
+    Disable-ProcessMitigations
+
+    # Disable memory compression
+    PowerShell -Command "Disable-MMAgent -MemoryCompression" | Out-Null
 
     Write-Output "" "Windows setup completed!"
 }
