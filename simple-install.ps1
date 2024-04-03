@@ -12,7 +12,7 @@ function Admin-Check {
 function Create-TempFolder{
     $tempFile = "C:\temp"
     if (Test-Path -Path $tempFile) {
-        Remove-Item -Path $tempFile -Force -Recurse -Confirm:$false
+        Remove-Item -Path $tempFile -Force -Recurse -Confirm:$false | Out-Null
     }
     New-Item -Path $tempFile -ItemType Directory | Out-Null
 
@@ -40,7 +40,7 @@ function Install-WindowsUpdates {
     }
     catch {
         # Attempt to catch an error (doesn't work :))
-        Write-Warning "error with updating windows"
+        Write-Output "error with updating windows"
     }
 
 }
@@ -48,16 +48,23 @@ function Install-WindowsUpdates {
 # Install Windows Features (example: .NET Framework 3.5)
 function Windows-features {
     Write-Output "info: Installing Windows features..."
-    Enable-WindowsOptionalFeature -Online -FeatureName NetFx3 -All
+    Enable-WindowsOptionalFeature -Online -FeatureName NetFx3 -All | Out-Null
 }
 
 # Install Visual C++ Redistributable
-function Visual-Cpp-Redistributable {
+function Install-VisualCppRedistributable {
     Write-Output "info: Installing Visual C++ Redistributable." 
     $url = "https://github.com/abbodi1406/vcredist/releases/download/v0.79.0/VisualCppRedist_AIO_x86_x64.exe"
-    $path = Join-Path $tempFile "VisualCppRedist_AIO_x86_x64.exe"
-    Invoke-WebRequest -Uri $url -OutFile $path
+    
+    # Use a predefined temporary directory path
+    $tempPath = $env:TEMP
+    $fileName = "VisualCppRedist_AIO_x86_x64.exe"
+    $path = Join-Path -Path $tempPath -ChildPath $fileName
 
+    # Add -UseBasicParsing to work on systems without IE or with IE not fully configured
+    Invoke-WebRequest -Uri $url -OutFile $path -UseBasicParsing | Out-Null
+
+    # Now that $path is correctly defined, Start-Process should work without issues
     Start-Process -FilePath $path -ArgumentList "/ai /gm2" -Wait
 }
 
@@ -97,7 +104,7 @@ function apps {
         scoop install main/python
         scoop install main/nodejs
         scoop install main/mingw
-        sscoop install extras/vscode
+        scoop install extras/vscode
     
         # Utilities
         Write-Output "info: Installing utilities..."
@@ -122,7 +129,7 @@ function firefox {
     Start-Process -FilePath "powershell.exe" -ArgumentList "-NoProfile", "-Command", $scriptCommand -Wait 
 }
 
-function Remove-Appsove-Apps {
+function Remove-Apps {
     param (
         [string[]]$AppList
     )
@@ -747,6 +754,7 @@ function Disable-ScheduledTasksByWildcard {
 
 function taskbar-settings {
 
+    try {
     # Disable Search Bar
     Set-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Search" -Name "SearchBoxTaskbarMode" -Value 0 -Type DWord -Force | Out-Null
 
@@ -773,6 +781,13 @@ function taskbar-settings {
     Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize "-Name "AppsUseLightTheme" -Value 0 -Force | Out-Null
 
     Write-Output "info: Taskbar have been cleaned"
+    }
+
+    catch {
+        Write-Output "error: Taskbar was not cleaned correctly"
+    }
+
+
 }
 
 function Disable-ProcessMitigations {
@@ -818,7 +833,7 @@ function Main {
     Windows-features
 
     # Install Visual C++ Redistributable
-    Visual-Cpp-Redistributable
+    Install-VisualCppRedistributable
 
     # Install package manager and applications
     apps 
@@ -1054,6 +1069,8 @@ function Main {
 
     Write-Output "" "Windows setup completed!"
 }
+
+
 
 # execute main function
 main
