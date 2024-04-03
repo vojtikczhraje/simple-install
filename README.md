@@ -1,6 +1,12 @@
 # simple-install
 - PowerShell script that makes setup of Windows easier.
 
+## Usage
+Open PowerShell as administrator and enter the command below. <br />
+```powershell
+irm "https://raw.githubusercontent.com/vojtikczhraje/simple-install/main/simple-install.ps1" | iex
+```
+
 ## Features
 > [!WARNING]  
 > Please be aware, the following applications are installed automatically without permission: <br />
