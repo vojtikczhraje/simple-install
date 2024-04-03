@@ -14,6 +14,7 @@
 - Change windows settings
 - Disable scheduled tasks
 - Configure taskbar
+- Disable memory compression
 
 ## Resources
 - [PC-Tunning](https://github.com/amitxv/PC-Tuning)
