@@ -127,11 +127,11 @@ function Remove-Appsove-Apps {
         [string[]]$AppList
     )
 
-    Write-Output "info: #oving unwatend Apps"
+    Write-Output "info: Removing unwatend Apps"
 
     foreach($App in $AppList) {
         Get-AppxPackage "*$App*" | Remove-AppxPackage -AllUsers -ErrorAction 'SilentlyContinue' | Out-Null
-        Write-Output "#oving: $App" 
+        Write-Output "Removing: $App" 
     }
 }
 
@@ -367,7 +367,7 @@ Windows Registry Editor Version 5.00
 
 ; disable Remote assistance
 
-[HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\#ote Assistance]
+[HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Remote Assistance]
 "fAllowToGetHelp"=dword:00000000
 
 ; show file extensions
