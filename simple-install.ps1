@@ -196,24 +196,24 @@ function BCD-settings {
     bcdedit /set quietboot yes | Out-Null
 
     # Avoid the use of uncontiguous portions of low-memory from the OS
-    bcdedit /set firstmegabytepolicy UseAll >nul 2>&1
-    bcdedit /set avoidlowmemory 0x8000000 >nul 2>&1
-    bcdedit /set nolowmem Yes >nul 2>&1
+    bcdedit /set firstmegabytepolicy UseAll | Out-Null
+    bcdedit /set avoidlowmemory 0x8000000 | Out-Null
+    bcdedit /set nolowmem Yes | Out-Null
 
     # Disable Some Kernel Memory Mitigations
-    bcdedit /set allowedinmemorysettings 0x0 >nul 2>&1
-    bcdedit /set isolatedcontext No >nul 2>&1
+    bcdedit /set allowedinmemorysettings 0x0 | Out-Null
+    bcdedit /set isolatedcontext No | Out-Null
  
     # Disable DMA Memory Protection And Cores Isolation
-    bcdedit /set vsmlaunchtype Off >nul 2>&1
-    bcdedit /set vm No >nul 2>&1
+    bcdedit /set vsmlaunchtype Off | Out-Null
+    bcdedit /set vm No | Out-Null
 
     # Enable X2Apic And Enable Memory Mapping
-    bcdedit /set x2apicpolicy Enable >nul 2>&1
-    bcdedit /set configaccesspolicy Default >nul 2>&1
-    bcdedit /set MSI Default >nul 2>&1
-    bcdedit /set usephysicaldestination No >nul 2>&1
-    bcdedit /set usefirmwarepcisettings No >nul 2>&1
+    bcdedit /set x2apicpolicy Enable | Out-Null
+    bcdedit /set configaccesspolicy Default | Out-Null
+    bcdedit /set MSI Default | Out-Null
+    bcdedit /set usephysicaldestination No | Out-Null
+    bcdedit /set usefirmwarepcisettings No | Out-Null
     
     Write-Output "info: BCD settings has been configured." 
 }
