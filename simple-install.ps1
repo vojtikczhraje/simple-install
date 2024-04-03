@@ -304,7 +304,6 @@ Windows Registry Editor Version 5.00
 "OptIn"=dword:00000000
 
 ; disable fault tolerant heap
-
 [HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\FTH]
 "Enabled"=dword:00000000
 
@@ -366,7 +365,7 @@ Windows Registry Editor Version 5.00
 [HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Multimedia\SystemProfile]
 "SystemResponsiveness"=dword:0000000a
 
-; disable #ote assistance
+; disable Remote assistance
 
 [HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\#ote Assistance]
 "fAllowToGetHelp"=dword:00000000
@@ -552,6 +551,7 @@ Windows Registry Editor Version 5.00
 @=""
 
 ; disable activity history
+
 [HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Explorer]
 "ShowRecent"=dword:00000000
 
@@ -697,7 +697,7 @@ function taskbar-settings {
     Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize" -Name "SystemUsesLightTheme" -Value 0 -Force | Out-Null
     Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize "-Name "AppsUseLightTheme" -Value 0 -Force | Out-Null
 
-    Write-Output "info: Configuring taskbar"
+    Write-Output "info: Taskbar have been cleaned"
 }
 
 
@@ -946,9 +946,6 @@ function Main {
 
     # Configure taskbar
     taskbar-settings
-
-
-
 
     Write-Output "" "Windows setup completed!"
 }
