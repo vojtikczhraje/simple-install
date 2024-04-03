@@ -5,19 +5,19 @@
 > [!WARNING]  
 > Please be aware, the following applications are installed automatically without permission: <br />
 > `git, python, nodejs, mingw, vscode, 7zip, lightshot, spotify, qbittorrent, discord, steam`
-- Windows update
-- Install Windows features (NET Framework 3.5)
-- Install Visual C++ Redistributable
-- Install package manager and applications
-- Install firefox
-- Remove bloat apps
-- Disable bloat services
-- Configure power settings (power plan)
-- Configure boot options
-- Change windows settings
-- Disable scheduled tasks
-- Configure taskbar
-- Disable memory compression
+- Installs Windows update
+- Installs Windows features (NET Framework 3.5)
+- Installs Visual C++ Redistributable
+- Installs package manager and applications
+- Installs Firefox
+- Removes bloat apps
+- Disables bloat services
+- Configures power settings (power plan)
+- Configures boot options
+- Changes Windows settings
+- Disables scheduled tasks
+- Configures taskbar
+- Disables memory compression
 
 ## Resources
 > [!NOTE]  
