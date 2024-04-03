@@ -14,7 +14,6 @@
 - Change windows settings
 - Disable scheduled tasks
 - Configure taskbar
-- Disable activity history
 
 ## Resources
 - [PC-Tunning](https://github.com/amitxv/PC-Tuning)
