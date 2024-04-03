@@ -192,12 +192,6 @@ function BCD-settings {
 
     # Set Boot Menu to Standard Instead Of Legacy
     bcdedit /set bootmenupolicy standard | Out-Null
-
-    # Disable Hyper-V
-    bcdedit /set hypervisorlaunchtype off | Out-Null
-
-    # Disable TPM
-    bcdedit /set tpmbootentropy ForceDisable | Out-Null
     
     # Enable Quietboot
     bcdedit /set quietboot yes | Out-Null
