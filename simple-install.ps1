@@ -1,3 +1,7 @@
+param (
+	[switch]$WindowsUpdate = $false
+)
+
 # Run as Administrator check
 function Admin-Check {
     If (-NOT ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator"))
@@ -821,7 +825,10 @@ function Main {
     Install-NuGET
 
     # Install Windows update
-    # Install-WindowsUpdates
+    if($WindowsUpdate) {
+        Install-WindowsUpdates
+    }
+    
 
     # Install windows features (NET - Framework 3.5)
     Windows-features
