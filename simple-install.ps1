@@ -821,7 +821,7 @@ function Main {
     Install-NuGET
 
     # Install Windows update
-    Install-WindowsUpdates
+    # Install-WindowsUpdates
 
     # Install windows features (NET - Framework 3.5)
     Windows-features
