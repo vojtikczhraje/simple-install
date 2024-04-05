@@ -1,7 +1,7 @@
 param (
-    [string]$tempFile = "C:\temp",
 	[switch]$WindowsUpdate = $false,
-    [switch]$ActivateWindows = $true
+    [switch]$WindowsActivation = $true,
+    [string]$tempFile = "C:\temp"
 )
 
 # Run as Administrator check
@@ -71,21 +71,32 @@ function Install-VisualCppRedistributable {
     # Now that $path is correctly defined, Start-Process should work without issues
     Start-Process -FilePath $path -ArgumentList "/ai /gm2" -Wait
 }
-
 function Activate-Windows {
-    $url = "https://raw.githubusercontent.com/vojtikczhraje/simple-install/main/assets/HWID_Activation.cmd"
+    Write-Output "info: Activating windows." 
 
-    # Use a predefined temporary directory path
+    $url = "https://raw.githubusercontent.com/vojtikczhraje/simple-install/main/assets/HWID_Activation.cmd"
     $fileName = "hwid_activation.cmd"
     $path = Join-Path -Path $tempFile -ChildPath $fileName
     
-    # Download the file
-    $content = Invoke-RestMethod -Uri $url
-    $content | Out-File -FilePath $path
+    Try {
+        # Download the file
+        $content = Invoke-RestMethod -Uri $url -ErrorAction Stop
+        $content | Out-File -FilePath $path -Encoding UTF8
 
-    # Run file
+        # Verify the file is downloaded and has content
+        if ((Test-Path -Path $path) -and ((Get-Content -Path $path).Length -gt 0)) {
+            Write-Output "info: $fileName downloaded successfully."
+        } else {
+            Write-Error "error: $fileName file is empty or missing."
+        }
 
-    Start-Process "cmd.exe" -ArgumentList "/c `"$path`"" -WindowStyle Minimized
+        # Run file -WindowStyle Minimized
+        Start-Process "cmd.exe" -ArgumentList "/c `"$path`"" -WindowStyle Minimized
+    }
+    Catch {
+        Write-Error "error: An error occurred while trying to download $fileName. $_"
+    }
+    
 }
 
 # Install scoop(package manager), apps
@@ -851,10 +862,14 @@ function Main {
     # Admin check
     Admin-Check
 
-    Activate-Windows
-
     # Create temp folder
     Create-TempFolder
+
+    # Activate Windows
+    if($WindowsActivation) {
+        Activate-Windows
+    }
+    
 
     # Needed to get the Windows Update PS Module
     Install-NuGET
