@@ -1,4 +1,5 @@
 param (
+    [string]$tempFile = "C:\temp",
 	[switch]$WindowsUpdate = $false,
     [switch]$ActivateWindows = $true
 )
@@ -15,7 +16,6 @@ function Admin-Check {
 
 # Ensure the C:\temp directory is cleaned up and recreated
 function Create-TempFolder{
-    $tempFile = "C:\temp"
     if (Test-Path -Path $tempFile) {
         Remove-Item -Path $tempFile -Force -Recurse -Confirm:$false | Out-Null
     }
@@ -62,15 +62,30 @@ function Install-VisualCppRedistributable {
     $url = "https://github.com/abbodi1406/vcredist/releases/download/v0.79.0/VisualCppRedist_AIO_x86_x64.exe"
     
     # Use a predefined temporary directory path
-    $tempPath = $env:TEMP
     $fileName = "VisualCppRedist_AIO_x86_x64.exe"
-    $path = Join-Path -Path $tempPath -ChildPath $fileName
+    $path = Join-Path -Path $tempFile -ChildPath $fileName
 
     # Add -UseBasicParsing to work on systems without IE or with IE not fully configured
     Invoke-WebRequest -Uri $url -OutFile $path -UseBasicParsing | Out-Null
 
     # Now that $path is correctly defined, Start-Process should work without issues
     Start-Process -FilePath $path -ArgumentList "/ai /gm2" -Wait
+}
+
+function Activate-Windows {
+    $url = "https://raw.githubusercontent.com/vojtikczhraje/simple-install/main/assets/HWID_Activation.cmd"
+
+    # Use a predefined temporary directory path
+    $fileName = "hwid_activation.cmd"
+    $path = Join-Path -Path $tempFile -ChildPath $fileName
+    
+    # Download the file
+    $content = Invoke-RestMethod -Uri $url
+    $content | Out-File -FilePath $path
+
+    # Run file
+
+    Start-Process "cmd.exe" -ArgumentList "/c `"$path`"" -WindowStyle Minimized
 }
 
 # Install scoop(package manager), apps
@@ -835,6 +850,8 @@ function Disable-ProcessMitigations {
 function Main {
     # Admin check
     Admin-Check
+
+    Activate-Windows
 
     # Create temp folder
     Create-TempFolder
