@@ -1,5 +1,6 @@
 param (
-	[switch]$WindowsUpdate = $false
+	[switch]$WindowsUpdate = $false,
+    [switch]$ActivateWindows = $true
 )
 
 # Run as Administrator check
@@ -266,6 +267,23 @@ Windows Registry Editor Version 5.00
 
 [HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\WindowsUpdate\UX\Settings]
 "ExcludeWUDriversInQualityUpdate"=dword:00000001
+
+; disable windows visual stuff
+
+[HKEY_CURRENT_USER\Control Panel\Desktop]
+"UserPreferencesMask"=hex:90,32,07,80,12,00,00,00
+"MinAnimate"="0"
+"MenuShowDelay"="0"
+"TooltipAnimation"="0"
+"MouseHoverTime"="0"
+"DragFullWindows"="0"
+"FontSmoothing"="2"
+"FontSmoothingType"="2"
+"FontSmoothingGamma"="1000"
+"FontSmoothingOrientation"="1"
+
+[HKEY_CURRENT_USER\Control Panel\Desktop]
+"MenuShowDelay"="0"
 
 ; disable UAC
 
