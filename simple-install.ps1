@@ -13,7 +13,7 @@ param (
     [switch]$DisableScheduledTasks = $true,
     [switch]$TaskbarSettings = $true,
     [switch]$DisableMitigations = $true,
-    [switch]$MemoryCompression = $true,
+    [switch]$MemoryCompression = $false,
     [string]$tempFile = "C:\temp"
 )
 
