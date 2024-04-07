@@ -10,7 +10,7 @@ irm "https://raw.githubusercontent.com/vojtikczhraje/simple-install/main/simple-
 ## Features
 > [!WARNING]  
 > Please be aware, the following applications are installed automatically without permission: <br />
-> `git, python, nodejs, mingw, vscode, 7zip, lightshot, spotify, qbittorrent, discord, steam`
+> `git, python, nodejs, mingw, 7zip `
 - Activates Windows
 - Installs Windows update
 - Installs Windows features (NET Framework 3.5)
