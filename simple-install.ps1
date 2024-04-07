@@ -1,6 +1,19 @@
 param (
-	[switch]$WindowsUpdate = $false,
+    [switch]$WindowsUpdate = $false,
     [switch]$WindowsActivation = $true,
+    [switch]$WindowsFeatures = $true,
+    [switch]$VisualCppRedistributable = $true,
+    [switch]$InstallApplications = $true,
+    [switch]$InstallFirefox = $true,
+    [switch]$RemoveBloatApplications = $true,
+    [switch]$DisableServices = $true,
+    [switch]$PowerSettings = $true,
+    [switch]$BootSettings = $true,
+    [switch]$RegistrySettings = $true,
+    [switch]$DisableScheduledTasks = $true,
+    [switch]$TaskbarSettings = $true,
+    [switch]$DisableMitigations = $true,
+    [switch]$MemoryCompression = $true,
     [string]$tempFile = "C:\temp"
 )
 
@@ -125,29 +138,15 @@ function apps {
     if($scoopInstalled){
         # Configure repositories
         scoop bucket add main
-        scoop bucket add versions
-        scoop bucket add extras
-        scoop bucket add games
     
         # Development tools
         Write-Output "info: Installing development tools..."
-        scoop install git
+        scoop install main/git
         scoop install main/python
         scoop install main/nodejs
         scoop install main/mingw
-        scoop install extras/vscode
-    
-        # Utilities
-        Write-Output "info: Installing utilities..."
         scoop install main/7zip
-        scoop install versions/lightshot
     
-        # Entertainment and communication
-        Write-Output "info: Installing entertainment and communication apps..."
-        scoop install extras/spotify
-        scoop install extras/qbittorrent
-        scoop install extras/discord
-        scoop install games/steam
     
         Write-Output "info: Applications installation completed."
     }
@@ -871,253 +870,278 @@ function Main {
     }
     
 
-    # Needed to get the Windows Update PS Module
-    Install-NuGET
-
     # Install Windows update
     if($WindowsUpdate) {
+        Install-NuGET
         Install-WindowsUpdates
     }
     
 
     # Install windows features (NET - Framework 3.5)
-    Windows-features
+    if($WindowsFeatures){
+        Windows-features
+    }
 
     # Install Visual C++ Redistributable
-    Install-VisualCppRedistributable
-
+    if($VisualCppRedistributable){
+        Install-VisualCppRedistributable
+    }
+ 
     # Install package manager and applications
-    apps 
+    if($InstallApplications){
+        apps
+    }
 
     # Install firefox
-    firefox
+    if($InstallFirefox){
+        firefox
+    }
+    
 
     # Remove bloated apps
-    $AppsToRemove = @(
-        'Microsoft.3DBuilder',
-    	'Microsoft.Microsoft3DViewer',
-    	'Microsoft.Print3D',
-    	'Microsoft.Appconnector',
-    	'Microsoft.BingFinance',
-    	'Microsoft.BingNews',
-    	'Microsoft.BingSports',
-    	'Microsoft.BingTranslator',
-    	'Microsoft.BingWeather',
-    	'Microsoft.BingFoodAndDrink',
-    	'Microsoft.BingTravel',
-    	'Microsoft.BingHealthAndFitness',
-    	'Microsoft.FreshPaint',
-    	'Microsoft.MicrosoftOfficeHub',
-    	'Microsoft.WindowsFeedbackHub',
-    	'Microsoft.MicrosoftSolitaireCollection',
-    	'Microsoft.MicrosoftPowerBIForWindows',
-    	'Microsoft.MinecraftUWP',
-    	'Microsoft.MicrosoftStickyNotes',
-    	'Microsoft.NetworkSpeedTest',
-    	'Microsoft.Office.OneNote',
-    	'Microsoft.OneConnect',
-    	'Microsoft.People',
-    	'Microsoft.SkypeApp',
-    	'Microsoft.Wallet',
-    	'Microsoft.WindowsAlarms',
-    	'Microsoft.WindowsCamera',
-    	'Microsoft.windowscommunicationsapps',
-    	'Microsoft.WindowsMaps',
-    	'Microsoft.WindowsPhone',
-    	'Microsoft.WindowsSoundRecorder',
-    	'Microsoft.XboxApp',
-    	'Microsoft.XboxGameOverlay',
-    	'Microsoft.XboxIdentityProvider',
-    	'Microsoft.XboxSpeechToTextOverlay',
-    	'Microsoft.ZuneMusic',
-    	'Microsoft.ZuneVideo',
-    	'Microsoft.CommsPhone',
-    	'Microsoft.ConnectivityStore',
-    	'Microsoft.GetHelp',
-    	'Microsoft.Getstarted',
-    	'Microsoft.Messaging',
-    	'Microsoft.Office.Sway',
-    	'Microsoft.WindowsReadingList',
-    	'9E2F88E3.Twitter',
-    	'PandoraMediaInc.29680B314EFC2',
-    	'Flipboard.Flipboard',
-    	'ShazamEntertainmentLtd.Shazam',
-    	'king.com.CandyCrushSaga',
-    	'king.com.CandyCrushSodaSaga',
-    	'king.com.*',
-    	'ClearChannelRadioDigital.iHeartRadio',
-    	'4DF9E0F8.Netflix',
-    	'6Wunderkinder.Wunderlist',
-    	'Drawboard.DrawboardPDF',
-    	'2FE3CB00.PicsArt-PhotoStudio',
-    	'D52A8D61.FarmVille2CountryEscape',
-    	'TuneIn.TuneInRadio',
-    	'GAMELOFTSA.Asphalt8Airborne',
-    	'TheNewYorkTimes.NYTCrossword',
-    	'DB6EA5DB.CyberLinkMediaSuiteEssentials',
-    	'Facebook.Facebook',
-    	'flaregamesGmbH.RoyalRevolt2',
-    	'Playtika.CaesarsSlotsFreeCasino',
-    	'A278AB0D.MarchofEmpires',
-    	'KeeperSecurityInc.Keeper',
-    	'ThumbmunkeysLtd.PhototasticCollage',
-    	'XINGAG.XING',
-    	'89006A2E.AutodeskSketchBook',
-    	'D5EA27B7.Duolingo-LearnLanguagesforFree',
-    	'46928bounde.EclipseManager',
-    	'ActiproSoftwareLLC.562882FEEB491',
-    	'DolbyLaboratories.DolbyAccess',
-    	'A278AB0D.DisneyMagicKingdoms',
-    	'WinZipComputing.WinZipUniversal',
-    	'Microsoft.ScreenSketch',
-    	'Microsoft.XboxGamingOverlay',
-    	'Microsoft.Xbox.TCUI',
-    	'Microsoft.YourPhone',
-    	'HP Wolf Security',
-    	'HP Wolf Security Application Support for Sure Sense',
-    	'HP Wolf Security Application Support for Windows',
-    	'Hp Wolf Security - Console',
-    	'ExpressVPN',
-    	'ACGMediaPlayer',
-        'ActiproSoftwareLLC',
-        'AdobePhotoshopExpress',
-        'Amazon.com.Amazon',
-        'Asphalt8Airborne',
-        'AutodeskSketchBook',
-        'BubbleWitch3Saga',
-        'CaesarsSlotsFreeCasino',
-        'CandyCrush',
-        'COOKINGFEVER',
-        'CyberLinkMediaSuiteEssentials';
-        'DisneyMagicKingdoms',
-        'Dolby',
-        'DrawboardPDF',
-        'Duolingo-LearnLanguagesforFree',
-        'EclipseManager',
-        'Facebook',
-        'FarmVille2CountryEscape',
-        'FitbitCoach',
-        'Flipboard',
-        'HiddenCity',
-        'Hulu',
-    	'iHeartRadio',
-        'Keeper',
-        'LinkedInforWindows',
-        'MarchofEmpires',
-        'Netflix',
-        'NYTCrossword',
-        'OneCalendar',
-        'PandoraMediaInc',
-        'PhototasticCollage',
-        'PicsArt-PhotoStudio',
-        'Plex',
-        'PolarrPhotoEditorAcademicEdition',
-        'RoyalRevolt',
-        'Shazam',
-        'Sidia.LiveWallpaper',
-        'SlingTV',
-        'Speed Test',
-        'Sway',
-        'TuneInRadio',
-        'Twitter',
-        'Viber',
-        'WinZipUniversal',
-        'Wunderlist',
-        'XING'
-    )
+    if($RemoveBloatApplications){
+        $AppsToRemove = @(
+            'Microsoft.3DBuilder',
+        	'Microsoft.Microsoft3DViewer',
+        	'Microsoft.Print3D',
+        	'Microsoft.Appconnector',
+        	'Microsoft.BingFinance',
+        	'Microsoft.BingNews',
+        	'Microsoft.BingSports',
+        	'Microsoft.BingTranslator',
+        	'Microsoft.BingWeather',
+        	'Microsoft.BingFoodAndDrink',
+        	'Microsoft.BingTravel',
+        	'Microsoft.BingHealthAndFitness',
+        	'Microsoft.FreshPaint',
+        	'Microsoft.MicrosoftOfficeHub',
+        	'Microsoft.WindowsFeedbackHub',
+        	'Microsoft.MicrosoftSolitaireCollection',
+        	'Microsoft.MicrosoftPowerBIForWindows',
+        	'Microsoft.MinecraftUWP',
+        	'Microsoft.MicrosoftStickyNotes',
+        	'Microsoft.NetworkSpeedTest',
+        	'Microsoft.Office.OneNote',
+        	'Microsoft.OneConnect',
+        	'Microsoft.People',
+        	'Microsoft.SkypeApp',
+        	'Microsoft.Wallet',
+        	'Microsoft.WindowsAlarms',
+        	'Microsoft.WindowsCamera',
+        	'Microsoft.windowscommunicationsapps',
+        	'Microsoft.WindowsMaps',
+        	'Microsoft.WindowsPhone',
+        	'Microsoft.WindowsSoundRecorder',
+        	'Microsoft.XboxApp',
+        	'Microsoft.XboxGameOverlay',
+        	'Microsoft.XboxIdentityProvider',
+        	'Microsoft.XboxSpeechToTextOverlay',
+        	'Microsoft.ZuneMusic',
+        	'Microsoft.ZuneVideo',
+        	'Microsoft.CommsPhone',
+        	'Microsoft.ConnectivityStore',
+        	'Microsoft.GetHelp',
+        	'Microsoft.Getstarted',
+        	'Microsoft.Messaging',
+        	'Microsoft.Office.Sway',
+        	'Microsoft.WindowsReadingList',
+        	'9E2F88E3.Twitter',
+        	'PandoraMediaInc.29680B314EFC2',
+        	'Flipboard.Flipboard',
+        	'ShazamEntertainmentLtd.Shazam',
+        	'king.com.CandyCrushSaga',
+        	'king.com.CandyCrushSodaSaga',
+        	'king.com.*',
+        	'ClearChannelRadioDigital.iHeartRadio',
+        	'4DF9E0F8.Netflix',
+        	'6Wunderkinder.Wunderlist',
+        	'Drawboard.DrawboardPDF',
+        	'2FE3CB00.PicsArt-PhotoStudio',
+        	'D52A8D61.FarmVille2CountryEscape',
+        	'TuneIn.TuneInRadio',
+        	'GAMELOFTSA.Asphalt8Airborne',
+        	'TheNewYorkTimes.NYTCrossword',
+        	'DB6EA5DB.CyberLinkMediaSuiteEssentials',
+        	'Facebook.Facebook',
+        	'flaregamesGmbH.RoyalRevolt2',
+        	'Playtika.CaesarsSlotsFreeCasino',
+        	'A278AB0D.MarchofEmpires',
+        	'KeeperSecurityInc.Keeper',
+        	'ThumbmunkeysLtd.PhototasticCollage',
+        	'XINGAG.XING',
+        	'89006A2E.AutodeskSketchBook',
+        	'D5EA27B7.Duolingo-LearnLanguagesforFree',
+        	'46928bounde.EclipseManager',
+        	'ActiproSoftwareLLC.562882FEEB491',
+        	'DolbyLaboratories.DolbyAccess',
+        	'A278AB0D.DisneyMagicKingdoms',
+        	'WinZipComputing.WinZipUniversal',
+        	'Microsoft.ScreenSketch',
+        	'Microsoft.XboxGamingOverlay',
+        	'Microsoft.Xbox.TCUI',
+        	'Microsoft.YourPhone',
+        	'HP Wolf Security',
+        	'HP Wolf Security Application Support for Sure Sense',
+        	'HP Wolf Security Application Support for Windows',
+        	'Hp Wolf Security - Console',
+        	'ExpressVPN',
+        	'ACGMediaPlayer',
+            'ActiproSoftwareLLC',
+            'AdobePhotoshopExpress',
+            'Amazon.com.Amazon',
+            'Asphalt8Airborne',
+            'AutodeskSketchBook',
+            'BubbleWitch3Saga',
+            'CaesarsSlotsFreeCasino',
+            'CandyCrush',
+            'COOKINGFEVER',
+            'CyberLinkMediaSuiteEssentials';
+            'DisneyMagicKingdoms',
+            'Dolby',
+            'DrawboardPDF',
+            'Duolingo-LearnLanguagesforFree',
+            'EclipseManager',
+            'Facebook',
+            'FarmVille2CountryEscape',
+            'FitbitCoach',
+            'Flipboard',
+            'HiddenCity',
+            'Hulu',
+        	'iHeartRadio',
+            'Keeper',
+            'LinkedInforWindows',
+            'MarchofEmpires',
+            'Netflix',
+            'NYTCrossword',
+            'OneCalendar',
+            'PandoraMediaInc',
+            'PhototasticCollage',
+            'PicsArt-PhotoStudio',
+            'Plex',
+            'PolarrPhotoEditorAcademicEdition',
+            'RoyalRevolt',
+            'Shazam',
+            'Sidia.LiveWallpaper',
+            'SlingTV',
+            'Speed Test',
+            'Sway',
+            'TuneInRadio',
+            'Twitter',
+            'Viber',
+            'WinZipUniversal',
+            'Wunderlist',
+            'XING'
+        )
 
-    Remove-Apps -AppList $AppsToRemove
+        Remove-Apps -AppList $AppsToRemove     
+    }
 
     # Disable services
-    $servicesToDisable = @(
-        'DiagTrack',
-        'DialogBlockingService',
-        'MsKeyboardFilter',
-        'NetMsmqActivator',
-        'PcaSvc',
-        'SEMgrSvc',
-        'ShellHWDetection',
-        'shpamsvc',
-        'SysMain',
-        'Themes',
-        'TrkWks',
-        'tzautoupdate',
-        'uhssvc',
-        'W3SVC',
-        'OneSyncSvc',
-        'WdiSystemHost',
-        'WdiServiceHost',
-        'SCardSvr',
-        'ScDeviceEnum',
-        'SCPolicySvc',
-        'SensorDataService',
-        'SensrSvc',
-        'Beep',
-        'cdfs',
-        'cdrom',
-        'cnghwassist',
-        'GpuEnergyDrv',
-        'GpuEnergyDr',
-        'Telemetry',
-        'VerifierExt'
-    )
+    if($DisableServices) {
+        $servicesToDisable = @(
+            'DiagTrack',
+            'DialogBlockingService',
+            'MsKeyboardFilter',
+            'NetMsmqActivator',
+            'PcaSvc',
+            'SEMgrSvc',
+            'ShellHWDetection',
+            'shpamsvc',
+            'SysMain',
+            'Themes',
+            'TrkWks',
+            'tzautoupdate',
+            'uhssvc',
+            'W3SVC',
+            'OneSyncSvc',
+            'WdiSystemHost',
+            'WdiServiceHost',
+            'SCardSvr',
+            'ScDeviceEnum',
+            'SCPolicySvc',
+            'SensorDataService',
+            'SensrSvc',
+            'Beep',
+            'cdfs',
+            'cdrom',
+            'cnghwassist',
+            'GpuEnergyDrv',
+            'GpuEnergyDr',
+            'Telemetry',
+            'VerifierExt'
+        )
 
     # Call the function with the service names to disable
-    Disable-Services -ServiceNames $servicesToDisable
+        Disable-Services -ServiceNames $servicesToDisable
+    }
 
     # Configure Power settings
-    Power-Settings
+    if($PowerSettings) {
+        Power-Settings
+    }
 
     # Configure BCD settings
-    BCD-settings
+    if($BootSettings) {
+        BCD-settings
+    }
 
     # Registry settings
-    $regSettings = "C:\temp\settings.reg"
-    $regFilePath = [System.IO.Path]::ChangeExtension($regSettings, ".reg")
-    Apply-RegistrySettings -RegFilePath $regFilePath
+    if($RegistrySettings){
+        $regSettings = "$tempFile\settings.reg"
+        $regFilePath = [System.IO.Path]::ChangeExtension($regSettings, ".reg")
+        Apply-RegistrySettings -RegFilePath $regFilePath
+    }
 
-    $wildcards = @(
-        "update",
-        "helloface",
-        "customer experience improvement program",
-        "microsoft compatibility appraiser",
-        "startupapptask",
-        "dssvccleanup",
-        "bitlocker",
-        "chkdsk",
-        "data integrity scan",
-        "defrag",
-        "languagecomponentsinstaller",
-        "upnp",
-        "windows filtering platform",
-        "tpm",
-        "speech",
-        "spaceport",
-        "power efficiency",
-        "cloudexperiencehost",
-        "diagnosis",
-        "file history",
-        "bgtaskregistrationmaintenancetask",
-        "autochk\proxy",
-        "siuf",
-        "device information",
-        "edp policy manager",
-        "defender",
-        "marebackup"
-    )
-
-    # Disable schedule tasks
-    Disable-ScheduledTasksByWildcard -Wildcards $wildcards 
+    if($DisableScheduledTasks){
+        $wildcards = @(
+            "update",
+            "helloface",
+            "customer experience improvement program",
+            "microsoft compatibility appraiser",
+            "startupapptask",
+            "dssvccleanup",
+            "bitlocker",
+            "chkdsk",
+            "data integrity scan",
+            "defrag",
+            "languagecomponentsinstaller",
+            "upnp",
+            "windows filtering platform",
+            "tpm",
+            "speech",
+            "spaceport",
+            "power efficiency",
+            "cloudexperiencehost",
+            "diagnosis",
+            "file history",
+            "bgtaskregistrationmaintenancetask",
+            "autochk\proxy",
+            "siuf",
+            "device information",
+            "edp policy manager",
+            "defender",
+            "marebackup"
+        )
+    
+        # Disable schedule tasks
+        Disable-ScheduledTasksByWildcard -Wildcards $wildcards 
+    }
 
     # Configure taskbar
-    taskbar-settings
+    if($TaskbarSettings){
+        taskbar-settings
+    }
 
     # Disable Process Mitigations
-    Disable-ProcessMitigations
+    if($DisableMitigations){
+        Disable-ProcessMitigations     
+    }
 
     # Disable memory compression
-    PowerShell -Command "Disable-MMAgent -MemoryCompression" | Out-Null
-
+    if($MemoryCompression){
+        PowerShell -Command "Disable-MMAgent -MemoryCompression" | Out-Null
+    }
+    
     Write-Output "" "Windows setup completed!"
 }
 
