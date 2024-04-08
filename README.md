@@ -28,22 +28,20 @@ irm "https://raw.githubusercontent.com/vojtikczhraje/simple-install/main/simple-
 | `$MemoryCompression ` | Disable memory compression on Windows. Can reduce CPU load but may increase physical memory usage and impact overall performance. | `true` |
 
 ### How to update settings in the table ^
-- Clone this repository to your PC.
-```git
-git clone https://github.com/vojtikczhraje/simple-install.git
-cd simple-install
+- Paste command below to PowerShell:
+```powershell
+irm "https://raw.githubusercontent.com/vojtikczhraje/simple-install/main/assets/config.ini" -OutFile "C:\config.ini"
+C:\config.ini
 ```
 
-- Find a file named `simple-install.ps1` and open it using a program for writing or editing text, like Notepad, VSCode, or Vim.
-- At the beginning of the file, you'll see `param` followed by some options. Change the options here to what you need.
+- Change the values to `true` for enabling option or `false` for disabling option
+- Then run the [main command](https://github.com/vojtikczhraje/simple-install/edit/main/README.md#usage) to execute the PowerShell script with changed options
 
 ### Example:
-```powershell
-param (
-    [switch]$WindowsUpdate = $true,  # This turns Windows updates on.
-    [switch]$WindowsActivation = $true,  # This turns Windows activation on.
-    # Don't change this: [string]$tempFile = "C:\temp"
-)
+```ini
+WindowsUpdate=false  # This turns Windows updates on.
+WindowsActivation=true  # This turns Windows activation on.
+...
 ```
 
 ---
