@@ -1,3 +1,4 @@
+# Default settings
 param (
     [switch]$WindowsUpdate = $false,
     [switch]$WindowsActivation = $true,
@@ -13,9 +14,55 @@ param (
     [switch]$DisableScheduledTasks = $true,
     [switch]$TaskbarSettings = $true,
     [switch]$DisableMitigations = $true,
-    [switch]$MemoryCompression = $false,
-    [string]$tempFile = "C:\temp"
+    [switch]$MemoryCompression = $true,
+    [string]$tempFile = "C:\temp",
+    [string]$configFile = "C:\config.ini"
 )
+
+
+# Define a function to parse the configuration file
+function Parse-ConfigFile {
+    param (
+        [string]$ConfigPath
+    )
+    
+    $configSettings = @{}
+    if (Test-Path $ConfigPath) {
+        $configLines = Get-Content $ConfigPath
+        foreach ($line in $configLines) {
+            if ($line -match '^\s*([^#]+?)\s*=\s*(.*?)\s*$') {
+                $configSettings[$matches[1]] = $matches[2]
+            }
+        }
+    }
+    return $configSettings
+}
+
+# Read settings from the configuration file
+$configSettings = Parse-ConfigFile -ConfigPath $configFile
+
+# Override default parameters with settings from the configuration file
+foreach ($setting in $configSettings.GetEnumerator()) {
+    switch ($setting.Key) {
+        "WindowsUpdate" { $WindowsUpdate = [convert]::ToBoolean($setting.Value) }
+        "WindowsActivation" { $WindowsActivation = [convert]::ToBoolean($setting.Value) }
+        "WindowsFeatures" { $WindowsFeatures = [convert]::ToBoolean($setting.Value) }
+        "VisualCppRedistributable" { $VisualCppRedistributable = [convert]::ToBoolean($setting.Value) }
+        "InstallApplications" { $InstallApplications = [convert]::ToBoolean($setting.Value) }
+        "InstallFirefox" { $InstallFirefox = [convert]::ToBoolean($setting.Value) }
+        "RemoveBloatApplications" { $RemoveBloatApplications = [convert]::ToBoolean($setting.Value) }
+        "DisableServices" { $DisableServices = [convert]::ToBoolean($setting.Value) }
+        "PowerSettings" { $PowerSettings = [convert]::ToBoolean($setting.Value) }
+        "BootSettings" { $BootSettings = [convert]::ToBoolean($setting.Value) }
+        "RegistrySettings" { $RegistrySettings = [convert]::ToBoolean($setting.Value) }
+        "DisableScheduledTasks" { $DisableScheduledTasks = [convert]::ToBoolean($setting.Value) }
+        "TaskbarSettings" { $TaskbarSettings = [convert]::ToBoolean($setting.Value) }
+        "DisableMitigations" { $DisableMitigations = [convert]::ToBoolean($setting.Value) }
+        "MemoryCompression" { $MemoryCompression = [convert]::ToBoolean($setting.Value) }
+        default { Write-Output "Unknown setting: $($_)" }
+    }
+}
+
 
 # Run as Administrator check
 function Admin-Check {
