@@ -35,7 +35,7 @@ C:\config.ini
 ```
 
 - Change the values to `true` for enabling option or `false` for disabling option
-- Then run the [main command](https://github.com/vojtikczhraje/simple-install/edit/main/README.md#usage) to execute the PowerShell script with changed options
+- Then run the [main command]([https://github.com/vojtikczhraje/simple-install/edit/main/README.md#usage](https://github.com/vojtikczhraje/simple-install?tab=readme-ov-file#simple-install)) to execute the PowerShell script with changed options
 
 ### Example:
 ```ini
