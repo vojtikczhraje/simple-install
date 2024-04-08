@@ -7,6 +7,7 @@ Open PowerShell as administrator and enter the command below. <br />
 irm "https://raw.githubusercontent.com/vojtikczhraje/simple-install/main/simple-install.ps1" | iex
 ```
 ---
+## Default settings
 
 | Option | Notes | Value |
 |----------|----------|----------|
@@ -26,7 +27,7 @@ irm "https://raw.githubusercontent.com/vojtikczhraje/simple-install/main/simple-
 | `$DisableMitigations ` | Disable Windows mitigations. Can lead to better performance but worse security | `true` |
 | `$MemoryCompression ` | Disable memory compression on Windows. Can reduce CPU load but may increase physical memory usage and impact overall performance. | `true` |
 
-### How to update settings in the table above
+### How to update settings in the table ^
 - Clone this repository to your PC.
 ```git
 git clone https://github.com/vojtikczhraje/simple-install.git
