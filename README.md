@@ -11,21 +11,21 @@ irm "https://raw.githubusercontent.com/vojtikczhraje/simple-install/main/simple-
 
 | Option | Notes | Value |
 |----------|----------|----------|
-| `$WindowsUpdate` | Downloads all necessery stuff for updating Windows and then updates Windows | `false` |
-| `$WindowsActivation` | Donwloads windows activation file from [here](https://github.com/massgravel/Microsoft-Activation-Scripts) | `true` |
-| `$WindowsFeatures` | Install Windows Features (example: .NET Framework 3.5) | `true` |
-| `$VisualCppRedistributable` | Install Visual C++ Redistributable from [here](https://github.com/abbodi1406/vcredist) | `true` |
-| `$InstallApplications` | Install scoop(package manager) and then install applications that are mention in features | `true` |
-| `$InstallFirefox` | Install minimal version of firefox from [here](https://github.com/amitxv/firefox) | `true` |
-| `$RemoveBloatApplications` | Uninstall Windows pre-installed bloat (solitaire, 3d paint etc..) | `true` |
-| `$DisableServices` | Disable some unnecessary Windows services (fax, beep, diagrack etc..) | `true` |
-| `$PowerSettings` | Configure Windows power settings for better performance | `true` |
-| `$BootSettings` | Configure boot options (loading circle etc..) | `true` |
-| `$RegistrySettings` | Configure Windows settings via registry | `true` |
-| `$DisableScheduledTasks` | Disable windows scheduled tasks. This task can be running in background without you knowing it | `true` |
-| `$TaskbarSettings` | Configure taskbar settings for better appearance | `false` |
-| `$DisableMitigations ` | Disable Windows mitigations. Can lead to better performance but worse security | `true` |
-| `$MemoryCompression ` | Disable memory compression on Windows. Can reduce CPU load but may increase physical memory usage and impact overall performance. | `true` |
+| `WindowsUpdate` | Downloads all necessery stuff for updating Windows and then updates Windows | `false` |
+| `WindowsActivation` | Donwloads windows activation file from [here](https://github.com/massgravel/Microsoft-Activation-Scripts) | `true` |
+| `WindowsFeatures` | Install Windows Features (example: .NET Framework 3.5) | `true` |
+| `VisualCppRedistributable` | Install Visual C++ Redistributable from [here](https://github.com/abbodi1406/vcredist) | `true` |
+| `InstallApplications` | Install scoop(package manager) and then install applications that are mention in features | `true` |
+| `InstallFirefox` | Install minimal version of firefox from [here](https://github.com/amitxv/firefox) | `true` |
+| `RemoveBloatApplications` | Uninstall Windows pre-installed bloat (solitaire, 3d paint etc..) | `true` |
+| `DisableServices` | Disable some unnecessary Windows services (fax, beep, diagrack etc..) | `true` |
+| `PowerSettings` | Configure Windows power settings for better performance | `true` |
+| `BootSettings` | Configure boot options (loading circle etc..) | `true` |
+| `RegistrySettings` | Configure Windows settings via registry | `true` |
+| `DisableScheduledTasks` | Disable windows scheduled tasks. This task can be running in background without you knowing it | `true` |
+| `TaskbarSettings` | Configure taskbar settings for better appearance | `false` |
+| `DisableMitigations ` | Disable Windows mitigations. Can lead to better performance but worse security | `true` |
+| `MemoryCompression ` | Disable memory compression on Windows. Can reduce CPU load but may increase physical memory usage and impact overall performance. | `true` |
 
 ### How to update settings in the table ^
 - Paste command below to PowerShell:
