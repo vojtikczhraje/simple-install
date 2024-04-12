@@ -12,9 +12,10 @@ param (
     [switch]$BootSettings = $true,
     [switch]$RegistrySettings = $true,
     [switch]$DisableScheduledTasks = $true,
-    [switch]$TaskbarSettings = $true,
+    [switch]$TaskbarSettings = $false,
     [switch]$DisableMitigations = $true,
     [switch]$MemoryCompression = $true,
+    [switch]$RemoveEdge = $false,
     [string]$tempFile = "C:\temp",
     [string]$configFile = "C:\config.ini"
 )
@@ -903,6 +904,23 @@ function Disable-ProcessMitigations {
     Set-ItemProperty -Path $regPath -Name "MitigationAuditOptions" -Value $modifiedMask -Type Binary -Force
 }
 
+function Remove-Edge {
+    $edgeUpdatePath = "C:\Program Files (x86)\Microsoft\EdgeUpdate"
+    if (Test-Path $edgeUpdatePath) {
+        Remove-Item -Path $edgeUpdatePath -Recurse -Force -ErrorAction SilentlyContinue
+        Write-Output "info: EdgeUpdate directory removed."
+    } else {
+        Write-Output "info: EdgeUpdate directory not found."
+    }
+    
+    # Search for and delete all shortcuts related to Edge across the C: drive
+    Get-ChildItem -Path C:\ -Filter *edge.lnk* -Recurse -ErrorAction SilentlyContinue | ForEach-Object {
+        Remove-Item $_.FullName -Force -ErrorAction SilentlyContinue
+        Write-Output "info: Deleted shortcut: $($_.FullName)"
+    }
+
+}
+
 # All functions are ran in main function 
 function Main {
     # Admin check
@@ -1187,8 +1205,14 @@ function Main {
     # Disable memory compression
     if($MemoryCompression){
         PowerShell -Command "Disable-MMAgent -MemoryCompression" | Out-Null
+        Write-Output "info: Disabling Memory Compression"
     }
     
+    # Remove edge
+    if($RemoveEdge) {
+        Remove-Edge
+    }
+
     Write-Output "" "Windows setup completed!"
 }
 
