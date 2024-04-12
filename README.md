@@ -26,6 +26,7 @@ irm "https://raw.githubusercontent.com/vojtikczhraje/simple-install/main/simple-
 | `TaskbarSettings` | Configure taskbar settings for better appearance | `false` |
 | `DisableMitigations ` | Disable Windows mitigations. Can lead to better performance but worse security | `true` |
 | `MemoryCompression ` | Disable memory compression on Windows. Can reduce CPU load but may increase physical memory usage and impact overall performance. | `true` |
+| `RemoveEdge ` | Disable Chromium Microsoft Edge. | `false` |
 
 ### How to update settings in the table ^
 - Paste command below to PowerShell:
