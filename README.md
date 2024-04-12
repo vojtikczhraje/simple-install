@@ -1,7 +1,7 @@
 # simple-install
 - PowerShell script that makes setup of Windows easier.
 
-## Usage
+## Getting Started
 Open PowerShell as administrator and enter the command below. <br />
 ```powershell
 irm "https://raw.githubusercontent.com/vojtikczhraje/simple-install/main/simple-install.ps1" | iex
@@ -34,7 +34,7 @@ irm "https://raw.githubusercontent.com/vojtikczhraje/simple-install/main/assets/
 ```
 
 - Change the values to `true` for enabling option or `false` for disabling option
-- Then run the [main command](#usage) to execute the PowerShell script with changed options
+- Then run the [download command ^](#getting-started) to execute the PowerShell script with changed options
 
 ### Example:
 ```ini
