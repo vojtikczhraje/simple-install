@@ -12,10 +12,11 @@ param (
     [switch]$BootSettings = $true,
     [switch]$RegistrySettings = $true,
     [switch]$DisableScheduledTasks = $true,
-    [switch]$TaskbarSettings = $false,
+    [switch]$TaskbarSettings = $false,   
     [switch]$DisableMitigations = $true,
     [switch]$MemoryCompression = $true,
     [switch]$RemoveEdge = $false,
+    [switch]$RemoveOneDrive = $true,
     [string]$tempFile = "C:\temp",
     [string]$configFile = "C:\config.ini"
 )
@@ -921,6 +922,60 @@ function Remove-Edge {
 
 }
 
+function Remove-OneDrive {
+    Write-Output "info: Removing OneDrive"
+
+    # Kill OneDrive process
+    taskkill.exe /f /im "OneDrive.exe" | Out-Null
+    taskkill.exe /f /im "explorer.exe" | Out-Null
+
+    try {
+        if (Test-Path "$env:systemroot\System32\OneDriveSetup.exe") {
+            & "$env:systemroot\System32\OneDriveSetup.exe" /uninstall | Out-Null
+        }
+        if (Test-Path "$env:systemroot\SysWOW64\OneDriveSetup.exe") {
+            & "$env:systemroot\SysWOW64\OneDriveSetup.exe" /uninstall | Out-Null
+        }
+        
+        # Removing OneDrive leftovers
+        Remove-Item -Recurse -Force -ErrorAction SilentlyContinue "$env:localappdata\Microsoft\OneDrive" | Out-Null
+        Remove-Item -Recurse -Force -ErrorAction SilentlyContinue "$env:programdata\Microsoft OneDrive" | Out-Null
+        Remove-Item -Recurse -Force -ErrorAction SilentlyContinue "$env:systemdrive\OneDriveTemp" | Out-Null
+    
+        # Check if directory is empty before removing
+        If ((Get-ChildItem "$env:userprofile\OneDrive" -Recurse | Measure-Object).Count -eq 0) {
+            Remove-Item -Recurse -Force -ErrorAction SilentlyContinue "$env:userprofile\OneDrive" | Out-Null
+        }
+        
+        # info: Disable OneDrive via Group Policies
+        New-FolderForced -Path "HKLM:\SOFTWARE\Wow6432Node\Policies\Microsoft\Windows\OneDrive" | Out-Null
+        Set-ItemProperty -Path "HKLM:\SOFTWARE\Wow6432Node\Policies\Microsoft\Windows\OneDrive" "DisableFileSyncNGSC" 1 | Out-Null
+        
+        # Remove Onedrive from explorer sidebar
+        New-PSDrive -PSProvider "Registry" -Root "HKEY_CLASSES_ROOT" -Name "HKCR" | Out-Null
+        New-ItemProperty -Path "HKCR:\CLSID\{018D5C66-4533-4307-9B53-224DE2ED1FE6}" -Name "System.IsPinnedToNameSpaceTree" -Value 0 -Force | Out-Null
+        New-ItemProperty -Path "HKCR:\Wow6432Node\CLSID\{018D5C66-4533-4307-9B53-224DE2ED1FE6}" -Name "System.IsPinnedToNameSpaceTree" -Value 0 -Force | Out-Null
+        Remove-PSDrive "HKCR" | Out-Null
+        
+        # Removing run hook for new users
+        reg load "HKU\Default" "C:\Users\Default\NTUSER.DAT" | Out-Null
+        Remove-ItemProperty -Path "HKU:\Default\SOFTWARE\Microsoft\Windows\CurrentVersion\Run" -Name "OneDriveSetup" -Force | Out-Null
+        reg unload "HKU\Default" | Out-Null
+        
+        # Removing startmenu entry
+        Remove-Item -Force -ErrorAction SilentlyContinue "$env:userprofile\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\OneDrive.lnk" | Out-Null
+        
+        # Removing scheduled task
+        Get-ScheduledTask -TaskPath '\' -TaskName 'OneDrive*' -ea SilentlyContinue | Unregister-ScheduledTask -Confirm:$false
+        
+        # Restarting explorer
+        Start-Process "explorer.exe"
+    }
+    catch {
+        Write-Output "info: OneDrive wasn't uninstalled succesfully" 
+    }   
+}
+
 # All functions are ran in main function 
 function Main {
     # Admin check
@@ -1211,6 +1266,10 @@ function Main {
     # Remove edge
     if($RemoveEdge) {
         Remove-Edge
+    }
+
+    if($RemoveOneDrive) {
+        Remove-OneDrive
     }
 
     Write-Output "" "Windows setup completed!"
