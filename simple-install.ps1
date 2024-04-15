@@ -792,6 +792,14 @@ Windows Registry Editor Version 5.00
 "Hidden"=dword:00000001
 "ShowSuperHidden"=dword:00000001
 
+; set font size for command Prompt
+[HKEY_CURRENT_USER\Console]
+"FontSize"=dword:000e0000
+
+; set font size for powershell
+[HKEY_CURRENT_USER\Console\%SystemRoot%_System32_WindowsPowerShell_v1.0_powershell.exe]
+"FontSize"=dword:000c0000
+
 "@
 
     # Check if the temporary directory for the .reg file exists, if not, create it
@@ -843,40 +851,25 @@ function Disable-ScheduledTasksByWildcard {
 }
 
 function taskbar-settings {
+    # Unpin apps from taskbar
+    Remove-Item -Force -Path "$env:APPDATA\Microsoft\Internet Explorer\Quick Launch\User Pinned\TaskBar\*" | Out-Null
+    Remove-Item -Force -Confirm:$false -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Taskband" | Out-Null
 
-    try {
     # Disable Search Bar
     Set-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Search" -Name "SearchBoxTaskbarMode" -Value 0 -Type DWord -Force | Out-Null
 
     # Left Align
     Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name "TaskbarAl" -Value 0 -Type DWord -Force | Out-Null
-
-
-    # Unpin applications from taskbar
-    function Unpin-App([string]$appname) {
-        ((New-Object -Com Shell.Application).NameSpace('shell:::{4234d49b-0245-4df3-b780-3893943456e1}').Items() |
-            ?{$_.Name -eq $appname}).Verbs() | ?{$_.Name.replace('&','') -match 'Unpin from taskbar'} | %{$_.DoIt()}
-    }
-    Unpin-App("Microsoft Edge")
-    Unpin-App("Microsoft Store") 
-    Unpin-App("Mail") 
-
-    Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name "TaskbarMn" -Value 0 -Force | Out-Null
-    Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name "TaskbarDa" -Value 0 -Force | Out-Null
-    Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name "ShowTaskViewButton" -Value 0 -Force | Out-Null
-    Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Search" -Name "SearchboxTaskbarMode" -Value 0 -Force | Out-Null
     
     # Dark Mode
     Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize" -Name "SystemUsesLightTheme" -Value 0 -Force | Out-Null
     Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize "-Name "AppsUseLightTheme" -Value 0 -Force | Out-Null
 
+    # Restart taskbar
+    taskkill /f /im explorer.exe
+    explorer.exe
+
     Write-Output "info: Taskbar have been cleaned"
-    }
-
-    catch {
-        Write-Output "error: Taskbar was not cleaned correctly"
-    }
-
 
 }
 
