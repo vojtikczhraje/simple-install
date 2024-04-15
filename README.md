@@ -27,7 +27,7 @@ irm "https://raw.githubusercontent.com/vojtikczhraje/simple-install/main/simple-
 | `DisableMitigations ` | Disable Windows mitigations. Can lead to better performance but worse security. | `true` |
 | `MemoryCompression ` | Disable memory compression on Windows. Can reduce CPU load but may increase physical memory usage and impact overall performance. | `true` |
 | `RemoveEdge ` | Disable Chromium Microsoft Edge. | `false` |
-| `RemoveOneDrive ` | Removing another Windows bloatware, since some people use it i made it separated. | `true` |
+| `RemoveOneDrive ` | Remove OneDrive as another Windows bloatware but separately (some people use it that's why). | `true` |
 
 ### How to update settings in the table ^
 - Paste command below to PowerShell:
