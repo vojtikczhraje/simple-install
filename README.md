@@ -75,3 +75,6 @@ WindowsActivation=true  # This turns Windows activation on.
 - [WinPostInstall](https://github.com/jhx0/WinPostInstall)
 - [Firefox](https://github.com/amitxv/firefox)
 - [OneDrive Uninstaller](https://github.com/ionuttbara/one-drive-uninstaller)
+
+## TODO
+- All wallpapers to black
