@@ -129,11 +129,6 @@ function menu {
         exit
     }
 
-
-    Write-Host "info: Starting in 3 sec..."
-    Start-Sleep -s 3
-    Clear-Host
-
 }
 
 # Ensure the C:\temp directory is cleaned up and recreated
@@ -974,7 +969,12 @@ function Main {
     # Admin check
     Admin-Check
 
+    # Menu
     menu
+    Write-Host "info: Starting in 3 sec..."
+    Start-Sleep -s 3
+    Clear-Host
+
 
     # Create temp folder
     Create-TempFolder
