@@ -1,23 +1,25 @@
 # Default settings
 param (
     [switch]$WindowsUpdate = $false,
-    [switch]$WindowsActivation = $true,
-    [switch]$WindowsFeatures = $true,
-    [switch]$VisualCppRedistributable = $true,
-    [switch]$InstallApplications = $true,
-    [switch]$InstallFirefox = $true,
-    [switch]$RemoveBloatApplications = $true,
-    [switch]$DisableServices = $true,
-    [switch]$PowerSettings = $true,
-    [switch]$RegistrySettings = $true,
-    [switch]$DisableScheduledTasks = $true,
-    [switch]$MemoryCompression = $true,
+    [switch]$WindowsActivation = $false,
+    [switch]$WindowsFeatures = $false,
+    [switch]$VisualCppRedistributable = $false,
+    [switch]$InstallApplications = $false,
+    [switch]$InstallFirefox = $false,
+    [switch]$RemoveBloatApplications = $false,
+    [switch]$DisableServices = $false,
+    [switch]$PowerSettings = $false,
+    [switch]$RegistrySettings = $false,
+    [switch]$DisableScheduledTasks = $false,
+    [switch]$MemoryCompression = $false,
     [switch]$RemoveEdge = $false,
-    [switch]$RemoveOneDrive = $true,
+    [switch]$RemoveOneDrive = $false,
+    [switch]$ReplaceWallpapers = $false,
     [string]$tempFile = "C:\temp",
     [string]$configFile = "C:\config.ini"
 )
 
+[console]::WindowWidth=75; [console]::WindowHeight=25; [console]::BufferWidth=[console]::WindowWidth
 
 # Define a function to parse the configuration file
 function Parse-ConfigFile {
@@ -71,6 +73,76 @@ function Admin-Check {
         Break
     }
     
+}
+
+function menu {
+    [console]::WindowWidth=75; [console]::WindowHeight=25; [console]::BufferWidth=[console]::WindowWidth
+
+    Clear-Host
+
+    Write-Host ""
+    Write-Host ""
+    Write-Host "                              |    Windows Update = $WindowsUpdate"
+    Write-Host "                              |    Windows Activation = $WindowsActivation"
+    Write-Host "                              |    Windows Features = $WindowsFeatures"
+    Write-Host "                              |    Visual Cpp Redistributable = $VisualCppRedistributable"
+    Write-Host "                              |    Install Applications = $InstallApplications"
+    Write-Host "       ####################   |    Install Firefox = $InstallFirefox"
+    Write-Host "                              |    Remove Bloat Applications = $RemoveBloatApplications"
+    Write-Host "          simple-install      |    Disable Services = $DisableServices"
+    Write-Host "                              |    Power Settings = $PowerSettings"
+    Write-Host "       ####################   |    Registry Settings = $RegistrySettings"
+    Write-Host "                              |    Disable Scheduled Tasks = $DisableScheduledTasks"
+    Write-Host "                              |    Memory Compression = $MemoryCompression"
+    Write-Host "                              |    Remove Edge = $RemoveEdge"
+    Write-Host "                              |    Remove OneDrive = $RemoveOneDrive"
+    Write-Host "                              |    Replace Wallpapers = $ReplaceWallpapers"
+    Write-Host ""
+    Write-Host ""
+
+    Write-Host "Do you wish to change configuration? [y]/[n]"
+
+    $answer = Read-Host 
+
+    if($answer -eq "y" -or $answer -eq "Y" -or $answer -eq "n" -or $answer -eq "N") {
+        if($answer -eq "y" -or $answer -eq "Y") {
+        # Check if config.ini exists
+        if (-Not (Test-Path "C:\config.ini")) {
+            # Download the file
+            irm "https://raw.githubusercontent.com/vojtikczhraje/simple-install/main/config.ini" -OutFile "C:\config.ini"
+            Start-Sleep -s 5
+        }
+
+        # Open config.ini and wait for it to be closed
+        $process = Start-Process "notepad.exe" "C:\config.ini" -PassThru
+        Write-Host "info: config.ini opened. Waiting for it to be closed..."
+        $process.WaitForExit()
+
+        # Restart script logic here if needed
+        Start-Process "powershell.exe" -ArgumentList "-NoProfile -ExecutionPolicy Bypass -File `"$($PSScriptRoot)\simple-install.ps1`""
+        Exit
+
+        } 
+    } else {
+        Write-Host "error: Wrong input, restarting..."
+        Start-Sleep -s 3
+        Start-Process "powershell.exe" -ArgumentList "-NoProfile -ExecutionPolicy Bypass -File `"$($PSScriptRoot)\simple-install.ps1`""
+        Exit
+    }
+
+
+    
+
+
+
+
+
+
+Write-Host ""
+
+
+Write-Host ""
+
 }
 
 # Ensure the C:\temp directory is cleaned up and recreated
@@ -891,10 +963,27 @@ function Remove-OneDrive {
     }   
 }
 
+function black-wallpapers {
+    try {
+        Invoke-WebRequest -Uri "https://github.com/amitxv/win-wallpaper/releases/download/0.4.0/win-wallpaper.exe" -OutFile "C:\Windows\win-wallpaper.exe" | Out-Null
+        Start-Process "cmd.exe" -ArgumentList "/c win-wallpaper --dir 'C:' --rgb #000000" -WindowStyle Minimized
+
+        Write-Output "info: Wallpapes were succesfully replaced with solid black images"
+    }
+    catch {
+        Write-Output "error: Wallpapers weren't replaced succesfully"
+    }
+
+    
+    
+}
+
 # All functions are ran in main function 
 function Main {
     # Admin check
     Admin-Check
+
+    menu
 
     # Create temp folder
     Create-TempFolder
@@ -1169,6 +1258,10 @@ function Main {
 
     if($RemoveOneDrive) {
         Remove-OneDrive
+    }
+
+    if($ReplaceWallpapers) {
+        black-wallpapers
     }
 
     Write-Output "" "Windows setup completed!"
