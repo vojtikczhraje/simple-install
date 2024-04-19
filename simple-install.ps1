@@ -1,20 +1,20 @@
 # Default settings
 param (
     [switch]$WindowsUpdate = $false,
-    [switch]$WindowsActivation = $false,
-    [switch]$WindowsFeatures = $false,
-    [switch]$VisualCppRedistributable = $false,
-    [switch]$InstallApplications = $false,
-    [switch]$InstallFirefox = $false,
-    [switch]$RemoveBloatApplications = $false,
-    [switch]$DisableServices = $false,
-    [switch]$PowerSettings = $false,
-    [switch]$RegistrySettings = $false,
-    [switch]$DisableScheduledTasks = $false,
-    [switch]$MemoryCompression = $false,
-    [switch]$RemoveEdge = $false,
-    [switch]$RemoveOneDrive = $false,
-    [switch]$ReplaceWallpapers = $false,
+    [switch]$WindowsActivation = $true,
+    [switch]$WindowsFeatures = $true,
+    [switch]$VisualCppRedistributable = $true,
+    [switch]$InstallApplications = $true,
+    [switch]$InstallFirefox = $true,
+    [switch]$RemoveBloatApplications = $true,
+    [switch]$DisableServices = $true,
+    [switch]$PowerSettings = $true,
+    [switch]$RegistrySettings = $true,
+    [switch]$DisableScheduledTasks = $true,
+    [switch]$MemoryCompression = $true,
+    [switch]$RemoveEdge = $true,
+    [switch]$RemoveOneDrive = $true,
+    [switch]$ReplaceWallpapers = $true,
     [string]$tempFile = "C:\temp",
     [string]$configFile = "C:\config.ini"
 )
@@ -121,30 +121,18 @@ function menu {
         Start-Process "powershell.exe" -ArgumentList "-NoProfile `"irm 'https://raw.githubusercontent.com/vojtikczhraje/simple-install/main/simple-install.ps1' | iex`""
         exit
 
-        # Restart script logic here if needed
-        Start-Process "powershell.exe" -ArgumentList "-NoProfile -ExecutionPolicy Bypass -File `"$($PSScriptRoot)\simple-install.ps1`""
-        Exit
-
         } 
     } else {
         Write-Host "error: Wrong input, restarting..."
         Start-Sleep -s 3
-        Start-Process "powershell.exe" -ArgumentList "-NoProfile -ExecutionPolicy Bypass -File `"$($PSScriptRoot)\simple-install.ps1`""
-        Exit
+        Start-Process "powershell.exe" -ArgumentList "-NoProfile `"irm 'https://raw.githubusercontent.com/vojtikczhraje/simple-install/main/simple-install.ps1' | iex`""
+        exit
     }
 
 
-    
-
-
-
-
-
-
-Write-Host ""
-
-
-Write-Host ""
+    Write-Host "info: Starting in 3 sec..."
+    Start-Sleep -s 3
+    Clear-Host
 
 }
 
