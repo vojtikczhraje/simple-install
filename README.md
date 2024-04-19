@@ -25,6 +25,7 @@ irm "https://raw.githubusercontent.com/vojtikczhraje/simple-install/main/simple-
 | `MemoryCompression ` | Disable memory compression on Windows. Can reduce CPU load but may increase physical memory usage and impact overall performance. | `true` |
 | `RemoveEdge ` | Disable Chromium Microsoft Edge. | `true` |
 | `RemoveOneDrive ` | Remove OneDrive as another Windows bloatware but separately (some people use it that's why). | `true` |
+| `ReplaceWallpapers ` | Replace Windows default wallpapers with solid black images. | `true` |
 
 ### How to update settings in the table ^
 - Paste command below to PowerShell:
@@ -72,6 +73,7 @@ WindowsActivation=true  # This turns Windows activation on.
 - [WinPostInstall](https://github.com/jhx0/WinPostInstall)
 - [Firefox](https://github.com/amitxv/firefox)
 - [OneDrive Uninstaller](https://github.com/ionuttbara/one-drive-uninstaller)
+- [Wallpaper replacer](https://github.com/amitxv/win-wallpaper)
 
 ## TODO
 - All wallpapers to black
