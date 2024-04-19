@@ -118,6 +118,9 @@ function menu {
         Write-Host "info: config.ini opened. Waiting for it to be closed..."
         $process.WaitForExit()
 
+        Start-Process "powershell.exe" -ArgumentList "-NoProfile `"irm 'https://raw.githubusercontent.com/vojtikczhraje/simple-install/main/simple-install.ps1' | iex`""
+        exit
+
         # Restart script logic here if needed
         Start-Process "powershell.exe" -ArgumentList "-NoProfile -ExecutionPolicy Bypass -File `"$($PSScriptRoot)\simple-install.ps1`""
         Exit
