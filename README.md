@@ -68,7 +68,6 @@ WindowsActivation=true  # This turns Windows activation on.
 > [!NOTE]  
 > I would like to acknowledge that not all the work presented here is solely my own. Below, I've listed credits to the authors of certain contributions.
 - [PC-Tunning](https://github.com/amitxv/PC-Tuning)
-- [Vitality](https://github.com/vojtikczhraje/Vitality)
 - [WinPostInstall](https://github.com/jhx0/WinPostInstall)
 - [Firefox](https://github.com/amitxv/firefox)
 - [OneDrive Uninstaller](https://github.com/ionuttbara/one-drive-uninstaller)
