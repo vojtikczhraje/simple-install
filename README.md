@@ -57,11 +57,12 @@ WindowsActivation=true  # This turns Windows activation on.
 - Removes bloat apps
 - Disables bloat services
 - Configures power settings (power plan)
-- Configures boot options
 - Changes Windows settings
 - Disables scheduled tasks
-- Configures taskbar
 - Disables memory compression
+- Removes OneDrive
+- Removes Edge
+
   
 
 ## Resources
