@@ -60,7 +60,7 @@ foreach ($setting in $configSettings.GetEnumerator()) {
         "TaskbarSettings" { $TaskbarSettings = [convert]::ToBoolean($setting.Value) }
         "DisableMitigations" { $DisableMitigations = [convert]::ToBoolean($setting.Value) }
         "MemoryCompression" { $MemoryCompression = [convert]::ToBoolean($setting.Value) }
-        default { Write-Output "Unknown setting: $($_)" }
+        default { Write-Host "Unknown setting: $($_)" }
     }
 }
 
@@ -69,7 +69,7 @@ foreach ($setting in $configSettings.GetEnumerator()) {
 function Admin-Check {
     If (-NOT ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator"))
     {
-        Write-Warning "error: Script is not runned as administrator"
+        Write-Warning "error:" -NoNewline -ForegroundColor Red; Write-Host "  Script is not runned as administrator"
         Break
     }
     
@@ -82,21 +82,21 @@ function menu {
 
     Write-Host ""
     Write-Host ""
-    Write-Host "                              |    Windows Update = $WindowsUpdate"
-    Write-Host "                              |    Windows Activation = $WindowsActivation"
-    Write-Host "                              |    Windows Features = $WindowsFeatures"
-    Write-Host "                              |    Visual Cpp Redistributable = $VisualCppRedistributable"
-    Write-Host "                              |    Install Applications = $InstallApplications"
-    Write-Host "       ####################   |    Install Firefox = $InstallFirefox"
-    Write-Host "                              |    Remove Bloat Applications = $RemoveBloatApplications"
-    Write-Host "          simple-install      |    Disable Services = $DisableServices"
-    Write-Host "                              |    Power Settings = $PowerSettings"
-    Write-Host "       ####################   |    Registry Settings = $RegistrySettings"
-    Write-Host "                              |    Disable Scheduled Tasks = $DisableScheduledTasks"
-    Write-Host "                              |    Memory Compression = $MemoryCompression"
-    Write-Host "                              |    Remove Edge = $RemoveEdge"
-    Write-Host "                              |    Remove OneDrive = $RemoveOneDrive"
-    Write-Host "                              |    Replace Wallpapers = $ReplaceWallpapers"
+    Write-Host "                              |    Windows Update = " -NoNewline; Write-Host $WindowsUpdate -ForegroundColor $(if ($WindowsUpdate) {'Green'} else {'Red'})
+    Write-Host "                              |    Windows Activation = " -NoNewline; Write-Host $WindowsActivation -ForegroundColor $(if ($WindowsActivation) {'Green'} else {'Red'})
+    Write-Host "                              |    Windows Features = " -NoNewline; Write-Host $WindowsFeatures -ForegroundColor $(if ($WindowsFeatures) {'Green'} else {'Red'})
+    Write-Host "                              |    Visual Cpp Redistributable = " -NoNewline; Write-Host $VisualCppRedistributable -ForegroundColor $(if ($VisualCppRedistributable) {'Green'} else {'Red'})
+    Write-Host "                              |    Install Applications = " -NoNewline; Write-Host $InstallApplications -ForegroundColor $(if ($InstallApplications) {'Green'} else {'Red'})
+    Write-Host "                              |    Install Firefox = " -NoNewline; Write-Host $InstallFirefox -ForegroundColor $(if ($InstallFirefox) {'Green'} else {'Red'})
+    Write-Host "                              |    Remove Bloat Applications = " -NoNewline; Write-Host $RemoveBloatApplications -ForegroundColor $(if ($RemoveBloatApplications) {'Green'} else {'Red'})
+    Write-Host "          simple-install      |    Disable Services = " -NoNewline; Write-Host $DisableServices -ForegroundColor $(if ($DisableServices) {'Green'} else {'Red'})
+    Write-Host "                              |    Power Settings = " -NoNewline; Write-Host $PowerSettings -ForegroundColor $(if ($PowerSettings) {'Green'} else {'Red'})
+    Write-Host "                              |    Registry Settings = " -NoNewline; Write-Host $RegistrySettings -ForegroundColor $(if ($RegistrySettings) {'Green'} else {'Red'})
+    Write-Host "                              |    Disable Scheduled Tasks = " -NoNewline; Write-Host $DisableScheduledTasks -ForegroundColor $(if ($DisableScheduledTasks) {'Green'} else {'Red'})
+    Write-Host "                              |    Memory Compression = " -NoNewline; Write-Host $MemoryCompression -ForegroundColor $(if ($MemoryCompression) {'Green'} else {'Red'})
+    Write-Host "                              |    Remove Edge = " -NoNewline; Write-Host $RemoveEdge -ForegroundColor $(if ($RemoveEdge) {'Green'} else {'Red'})
+    Write-Host "                              |    Remove OneDrive = " -NoNewline; Write-Host $RemoveOneDrive -ForegroundColor $(if ($RemoveOneDrive) {'Green'} else {'Red'})
+    Write-Host "                              |    Replace Wallpapers = " -NoNewline; Write-Host $ReplaceWallpapers -ForegroundColor $(if ($ReplaceWallpapers) {'Green'} else {'Red'})
     Write-Host ""
     Write-Host ""
 
@@ -115,7 +115,7 @@ function menu {
 
         # Open config.ini and wait for it to be closed
         $process = Start-Process "notepad.exe" "C:\config.ini" -PassThru
-        Write-Host "info: config.ini opened. Waiting for it to be closed..."
+        Write-Host "info:" -NoNewline -ForegroundColor Cyan; Write-Host "  config.ini opened. Waiting for it to be closed..."
         $process.WaitForExit()
 
         Start-Process "powershell.exe" -ArgumentList "-NoProfile `"irm 'https://raw.githubusercontent.com/vojtikczhraje/simple-install/main/simple-install.ps1' | iex`""
@@ -123,7 +123,7 @@ function menu {
 
         } 
     } else {
-        Write-Host "error: Wrong input, restarting..."
+        Write-Host "error:" -NoNewline -ForegroundColor Red; Write-Host "  Wrong input, restarting..."
         Start-Sleep -s 3
         Start-Process "powershell.exe" -ArgumentList "-NoProfile `"irm 'https://raw.githubusercontent.com/vojtikczhraje/simple-install/main/simple-install.ps1' | iex`""
         exit
@@ -146,7 +146,7 @@ function Install-WindowsUpdates {
     Install-PackageProvider -Name NuGet -Force | Out-Null
 
     try {
-        Write-Output "info: Running Windows Update"
+        Write-Host "info:" -NoNewline -ForegroundColor Cyan; Write-Host "  Running Windows Update"
 	
         # Windows Update PS Module
         Install-Module -Name PSWindowsUpdate -Force | Out-Null
@@ -159,20 +159,20 @@ function Install-WindowsUpdates {
     }
     catch {
         # Attempt to catch an error (doesn't work :))
-        Write-Output "error with updating windows"
+        Write-Host "error:" -NoNewline -ForegroundColor Red; Write-Host "  Windows wasn't updated succesfully"
     }
 
 }
 
 # Install Windows Features (example: .NET Framework 3.5)
 function Windows-features {
-    Write-Output "info: Installing Windows features..."
+    Write-Host "info:" -NoNewline -ForegroundColor Cyan; Write-Host "  Installing Windows features..."
     Enable-WindowsOptionalFeature -Online -FeatureName NetFx3 -All | Out-Null
 }
 
 # Install Visual C++ Redistributable
 function Install-VisualCppRedistributable {
-    Write-Output "info: Installing Visual C++ Redistributable." 
+    Write-Host "info:" -NoNewline -ForegroundColor Cyan; Write-Host "  Installing Visual C++ Redistributable." 
     $url = "https://github.com/abbodi1406/vcredist/releases/download/v0.79.0/VisualCppRedist_AIO_x86_x64.exe"
     
     # Use a predefined temporary directory path
@@ -186,7 +186,7 @@ function Install-VisualCppRedistributable {
     Start-Process -FilePath $path -ArgumentList "/ai /gm2" -Wait
 }
 function Activate-Windows {
-    Write-Output "info: Activating windows." 
+    Write-Host "info:" -NoNewline -ForegroundColor Cyan; Write-Host "  Activating windows." 
 
     $url = "https://raw.githubusercontent.com/vojtikczhraje/simple-install/main/assets/HWID_Activation.cmd"
     $fileName = "hwid_activation.cmd"
@@ -199,16 +199,16 @@ function Activate-Windows {
 
         # Verify the file is downloaded and has content
         if ((Test-Path -Path $path) -and ((Get-Content -Path $path).Length -gt 0)) {
-            Write-Output "info: $fileName downloaded successfully."
+            Write-Host "info:" -NoNewline -ForegroundColor Cyan; Write-Host "  $fileName downloaded successfully."
         } else {
-            Write-Error "error: $fileName file is empty or missing."
+            Write-Host "error:" -NoNewline -ForegroundColor Red; Write-Host "  $fileName file is empty or missing."
         }
 
         # Run file -WindowStyle Minimized
         Start-Process "cmd.exe" -ArgumentList "/c `"$path`"" -WindowStyle Minimized
     }
     Catch {
-        Write-Error "error: An error occurred while trying to download $fileName. $_"
+        Write-Host "error:" -NoNewline -ForegroundColor Red; Write-Host "  An error occurred while trying to download $fileName. $_"
     }
     
 }
@@ -217,9 +217,9 @@ function Activate-Windows {
 function apps {
     $scoopInstalled = Test-Path -Path "$env:USERPROFILE\scoop"
     if ($scoopInstalled) {
-        Write-Output "info: Scoop is already installed."
+        Write-Host "info:" -NoNewline -ForegroundColor Cyan; Write-Host "  Scoop is already installed."
     } else {
-        Write-Output "info: Scoop is not installed, installing now..."
+        Write-Host "info:" -NoNewline -ForegroundColor Cyan; Write-Host "  Scoop is not installed, installing now..."
     
         iex "& {$(irm get.scoop.sh)} -RunAsAdmin"
     
@@ -227,9 +227,9 @@ function apps {
         $scoopInstalled = Test-Path -Path "$env:USERPROFILE\scoop"
     
         if ($scoopInstalled) {
-            Write-Output "info: Scoop has been successfully installed."
+            Write-Host "info:" -NoNewline -ForegroundColor Cyan; Write-Host "  Scoop has been successfully installed."
         } else {
-            Write-Output "info: Scoop installation failed."
+            Write-Host "info:" -NoNewline -ForegroundColor Cyan; Write-Host "  Scoop installation failed."
             # Exit the script if Scoop couldn't be installed
             exit
         }
@@ -241,9 +241,9 @@ function apps {
 
         # Present a menu for selecting which development tools to install
         $toolsToInstall = @("git", "python", "nodejs", "mingw", "7zip")
-        Write-Output "Select the tools you want to install. Use commas to separate multiple choices (e.g., 1,2)."
+        Write-Host "Select the tools you want to install. Use commas to separate multiple choices (e.g., 1,2)."
         for ($i=0; $i -lt $toolsToInstall.Length; $i++) {
-            Write-Output "$($i+1): $($toolsToInstall[$i])"
+            Write-Host "$($i+1): $($toolsToInstall[$i])"
         }
         
         $userInput = Read-Host "Enter your choices"
@@ -252,20 +252,20 @@ function apps {
         foreach ($index in $selectedIndexes) {
             if ($index -ge 0 -and $index -lt $toolsToInstall.Length) {
                 $tool = $toolsToInstall[$index]
-                Write-Output "Installing $tool..."
+                Write-Host "Installing $tool..."
                 scoop install main/$tool
             }
             else {
-                Write-Output "error: Invalid selection: $index"
+                Write-Host "error:" -NoNewline -ForegroundColor Red; Write-Host "  Invalid selection: $index"
             }
         }
     
-        Write-Output "info: Applications installation completed."
+        Write-Host "info:" -NoNewline -ForegroundColor Cyan; Write-Host "  Applications installation completed."
     }
 }
 # Install firefox
 function firefox {
-    Write-Output "info: Installing firefox." 
+    Write-Host "info:" -NoNewline -ForegroundColor Cyan; Write-Host "  Installing firefox." 
     $scriptCommand = "irm https://raw.githubusercontent.com/amitxv/firefox/main/setup.ps1 | iex"
     Start-Process -FilePath "powershell.exe" -ArgumentList "-NoProfile", "-Command", $scriptCommand -Wait 
 }
@@ -275,11 +275,11 @@ function Remove-Apps {
         [string[]]$AppList
     )
 
-    Write-Output "info: Removing unwatend Apps"
+    Write-Host "info:" -NoNewline -ForegroundColor Cyan; Write-Host "  Removing unwatend Apps"
 
     foreach($App in $AppList) {
         Get-AppxPackage "*$App*" | Remove-AppxPackage -AllUsers -ErrorAction 'SilentlyContinue' | Out-Null
-        Write-Output "Removing: $App" 
+        Write-Host "Removing: $App" 
     }
 }
 
@@ -293,14 +293,14 @@ function Remove-Apps {
     foreach ($service in $ServiceNames) {
         $serviceObj = Get-Service -Name $service -ErrorAction SilentlyContinue
         if ($serviceObj) {
-            Write-Output "disabling service: $service"
+            Write-Host "disabling service: $service"
             Set-Service -Name $service -StartupType Disabled -ErrorAction SilentlyContinue
         } else {
             Write-Warning "Service $service not found."
         }
     }
 
-    Write-Output "All specified services have been set to disabled."
+    Write-Host "All specified services have been set to disabled."
 }
 
 # Configure power settings
@@ -323,7 +323,7 @@ function Power-Settings {
     # Disable hibernate
     powercfg.exe /hibernate off
 
-    Write-Output "info: Power settings has been configured." 
+    Write-Host "info:" -NoNewline -ForegroundColor Cyan; Write-Host "  Power settings has been configured." 
 }
 
 # Create settings.reg and apply it (
@@ -842,7 +842,7 @@ Windows Registry Editor Version 5.00
     # Execute the .reg file silently
     Start-Process -FilePath "regedit.exe" -ArgumentList "/s `"$RegFilePath`"" -Wait -NoNewWindow
 
-    Write-Output "info: Registry changes have been applied."
+    Write-Host "info:" -NoNewline -ForegroundColor Cyan; Write-Host "  Registry changes have been applied."
 }
 
 # Disable scheduled tasks
@@ -870,33 +870,33 @@ function Disable-ScheduledTasksByWildcard {
                 Disable-ScheduledTask -TaskName $task.TaskName -TaskPath $task.TaskPath -Confirm:$false
                 <# Write-Host "Successfully disabled task: $($task.TaskName)" #>
             } catch {
-                <# Write-Warning "Failed to disable task: $($task.TaskName). Error: $_" #>
+                <# Write-Warning "Failed to disable task: $($task.TaskName). error:" -NoNewline -ForegroundColor Red; Write-Host "  $_" #>
             }
         }
     }
 
-    Write-Output "info: Scheduled tasks were succesfully disabled."
+    Write-Host "info:" -NoNewline -ForegroundColor Cyan; Write-Host "  Scheduled tasks were succesfully disabled."
 }
 
 function Remove-Edge {
     $edgeUpdatePath = "C:\Program Files (x86)\Microsoft\EdgeUpdate"
     if (Test-Path $edgeUpdatePath) {
         Remove-Item -Path $edgeUpdatePath -Recurse -Force -ErrorAction SilentlyContinue
-        Write-Output "info: EdgeUpdate directory removed."
+        Write-Host "info:" -NoNewline -ForegroundColor Cyan; Write-Host "  EdgeUpdate directory removed."
     } else {
-        Write-Output "info: EdgeUpdate directory not found."
+        Write-Host "info:" -NoNewline -ForegroundColor Cyan; Write-Host "  EdgeUpdate directory not found."
     }
     
     # Search for and delete all shortcuts related to Edge across the C: drive
     Get-ChildItem -Path C:\ -Filter *edge.lnk* -Recurse -ErrorAction SilentlyContinue | ForEach-Object {
         Remove-Item $_.FullName -Force -ErrorAction SilentlyContinue
-        Write-Output "info: Deleted shortcut: $($_.FullName)"
+        Write-Host "info:" -NoNewline -ForegroundColor Cyan; Write-Host "  Deleted shortcut: $($_.FullName)"
     }
 
 }
 
 function Remove-OneDrive {
-    Write-Output "info: Removing OneDrive"
+    Write-Host "info:" -NoNewline -ForegroundColor Cyan; Write-Host "  Removing OneDrive"
 
     # Kill OneDrive process
     taskkill.exe /f /im "OneDrive.exe" | Out-Null
@@ -920,7 +920,7 @@ function Remove-OneDrive {
             Remove-Item -Recurse -Force -ErrorAction SilentlyContinue "$env:userprofile\OneDrive" | Out-Null
         }
         
-        # info: Disable OneDrive via Group Policies
+        # info:" -NoNewline -ForegroundColor Cyan; Write-Host "  Disable OneDrive via Group Policies
         New-FolderForced -Path "HKLM:\SOFTWARE\Wow6432Node\Policies\Microsoft\Windows\OneDrive" | Out-Null
         Set-ItemProperty -Path "HKLM:\SOFTWARE\Wow6432Node\Policies\Microsoft\Windows\OneDrive" "DisableFileSyncNGSC" 1 | Out-Null
         
@@ -945,7 +945,7 @@ function Remove-OneDrive {
         Start-Process "explorer.exe"
     }
     catch {
-        Write-Output "info: OneDrive wasn't uninstalled succesfully" 
+        Write-Host "info:" -NoNewline -ForegroundColor Cyan; Write-Host "  OneDrive wasn't uninstalled succesfully" 
     }   
 }
 
@@ -954,10 +954,10 @@ function black-wallpapers {
         Invoke-WebRequest -Uri "https://github.com/amitxv/win-wallpaper/releases/download/0.4.0/win-wallpaper.exe" -OutFile "C:\Windows\win-wallpaper.exe" | Out-Null
         Start-Process "cmd.exe" -ArgumentList "/c win-wallpaper --dir 'C:' --rgb #000000" -WindowStyle Minimized
 
-        Write-Output "info: Wallpapes were succesfully replaced with solid black images"
+        Write-Host "info:" -NoNewline -ForegroundColor Cyan; Write-Host "  Wallpapes were succesfully replaced with solid black images"
     }
     catch {
-        Write-Output "error: Wallpapers weren't replaced succesfully"
+        Write-Host "error:" -NoNewline -ForegroundColor Red; Write-Host "  Wallpapers weren't replaced succesfully"
     }
 
     
@@ -971,7 +971,7 @@ function Main {
 
     # Menu
     menu
-    Write-Host "info: Starting in 3 sec..."
+    Write-Host "info:" -NoNewline -ForegroundColor Cyan; Write-Host "  Starting in 3 sec..."
     Start-Sleep -s 3
     Clear-Host
 
@@ -1239,7 +1239,7 @@ function Main {
     # Disable memory compression
     if($MemoryCompression){
         PowerShell -Command "Disable-MMAgent -MemoryCompression" | Out-Null
-        Write-Output "info: Disabling Memory Compression"
+        Write-Host "info:" -NoNewline -ForegroundColor Cyan; Write-Host "  Disabling Memory Compression"
     }
     
     # Remove edge
@@ -1255,7 +1255,7 @@ function Main {
         black-wallpapers
     }
 
-    Write-Output "" "Windows setup completed!"
+    Write-Host "" "Windows setup completed!"
 }
 
 
