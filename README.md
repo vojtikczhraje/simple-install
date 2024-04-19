@@ -76,4 +76,4 @@ WindowsActivation=true  # This turns Windows activation on.
 - [Wallpaper replacer](https://github.com/amitxv/win-wallpaper)
 
 ## TODO
-- All wallpapers to black
+- No idea
