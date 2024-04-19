@@ -9,11 +9,8 @@ param (
     [switch]$RemoveBloatApplications = $true,
     [switch]$DisableServices = $true,
     [switch]$PowerSettings = $true,
-    [switch]$BootSettings = $true,
     [switch]$RegistrySettings = $true,
     [switch]$DisableScheduledTasks = $true,
-    [switch]$TaskbarSettings = $false,   
-    [switch]$DisableMitigations = $true,
     [switch]$MemoryCompression = $true,
     [switch]$RemoveEdge = $false,
     [switch]$RemoveOneDrive = $true,
@@ -85,13 +82,10 @@ function Create-TempFolder{
 
 }
 
-# Needed to get the Windows Update PS Module
-function Install-NuGET {
-    Install-PackageProvider -Name NuGet -Force | Out-Null
-}
-
 # Install Windows Updates
 function Install-WindowsUpdates {
+
+    Install-PackageProvider -Name NuGet -Force | Out-Null
 
     try {
         Write-Output "info: Running Windows Update"
@@ -183,24 +177,34 @@ function apps {
         }
     }
 
-    $scoopInstalled = Test-Path -Path "$env:USERPROFILE\scoop"
-    if($scoopInstalled){
+    if ($scoopInstalled) {
         # Configure repositories
         scoop bucket add main
-    
-        # Development tools
-        Write-Output "info: Installing development tools..."
-        scoop install main/git
-        scoop install main/python
-        scoop install main/nodejs
-        scoop install main/mingw
-        scoop install main/7zip
-    
+
+        # Present a menu for selecting which development tools to install
+        $toolsToInstall = @("git", "python", "nodejs", "mingw", "7zip")
+        Write-Output "Select the tools you want to install. Use commas to separate multiple choices (e.g., 1,2)."
+        for ($i=0; $i -lt $toolsToInstall.Length; $i++) {
+            Write-Output "$($i+1): $($toolsToInstall[$i])"
+        }
+        
+        $userInput = Read-Host "Enter your choices"
+        $selectedIndexes = $userInput.Split(',') | ForEach-Object { [int]$_ - 1 }
+
+        foreach ($index in $selectedIndexes) {
+            if ($index -ge 0 -and $index -lt $toolsToInstall.Length) {
+                $tool = $toolsToInstall[$index]
+                Write-Output "Installing $tool..."
+                scoop install main/$tool
+            }
+            else {
+                Write-Output "error: Invalid selection: $index"
+            }
+        }
     
         Write-Output "info: Applications installation completed."
     }
 }
-
 # Install firefox
 function firefox {
     Write-Output "info: Installing firefox." 
@@ -262,40 +266,6 @@ function Power-Settings {
     powercfg.exe /hibernate off
 
     Write-Output "info: Power settings has been configured." 
-}
-
-# Configure the BCD store
-function BCD-settings {
-    #  Disables boot graphics.
-    bcdedit /set bootux disabled | Out-Null
-
-    # Set Boot Menu to Standard Instead Of Legacy
-    bcdedit /set bootmenupolicy standard | Out-Null
-    
-    # Enable Quietboot
-    bcdedit /set quietboot yes | Out-Null
-
-    # Avoid the use of uncontiguous portions of low-memory from the OS
-    bcdedit /set firstmegabytepolicy UseAll | Out-Null
-    bcdedit /set avoidlowmemory 0x8000000 | Out-Null
-    bcdedit /set nolowmem Yes | Out-Null
-
-    # Disable Some Kernel Memory Mitigations
-    bcdedit /set allowedinmemorysettings 0x0 | Out-Null
-    bcdedit /set isolatedcontext No | Out-Null
- 
-    # Disable DMA Memory Protection And Cores Isolation
-    bcdedit /set vsmlaunchtype Off | Out-Null
-    bcdedit /set vm No | Out-Null
-
-    # Enable X2Apic And Enable Memory Mapping
-    bcdedit /set x2apicpolicy Enable | Out-Null
-    bcdedit /set configaccesspolicy Default | Out-Null
-    bcdedit /set MSI Default | Out-Null
-    bcdedit /set usephysicaldestination No | Out-Null
-    bcdedit /set usefirmwarepcisettings No | Out-Null
-    
-    Write-Output "info: BCD settings has been configured." 
 }
 
 # Create settings.reg and apply it (
@@ -850,54 +820,6 @@ function Disable-ScheduledTasksByWildcard {
     Write-Output "info: Scheduled tasks were succesfully disabled."
 }
 
-function taskbar-settings {
-    # Unpin apps from taskbar
-    Remove-Item -Force -Path "$env:APPDATA\Microsoft\Internet Explorer\Quick Launch\User Pinned\TaskBar\*" | Out-Null
-    Remove-Item -Force -Confirm:$false -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Taskband" | Out-Null
-
-    # Disable Search Bar
-    Set-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Search" -Name "SearchBoxTaskbarMode" -Value 0 -Type DWord -Force | Out-Null
-
-    # Left Align
-    Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name "TaskbarAl" -Value 0 -Type DWord -Force | Out-Null
-    
-    # Dark Mode
-    Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize" -Name "SystemUsesLightTheme" -Value 0 -Force | Out-Null
-    Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize "-Name "AppsUseLightTheme" -Value 0 -Force | Out-Null
-
-    # Restart taskbar
-    taskkill /f /im explorer.exe
-    explorer.exe
-
-    Write-Output "info: Taskbar have been cleaned"
-
-}
-
-function Disable-ProcessMitigations {
-    # Disable process mitigations
-    Set-ProcessMitigation -System -Disable CFG | Out-Null
-
-    # Get current mask
-    $regPath = "HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\kernel"
-    $regName = "MitigationAuditOptions"
-    $mitigationMask = (Get-ItemProperty -Path $regPath -Name $regName).MitigationAuditOptions
-    
-    # Ensure mitigationMask is a string for replacement operation
-    $mitigationMaskStr = [BitConverter]::ToString($mitigationMask).Replace("-", "")
-
-    # Set all values in current mask to 2
-    0..9 | ForEach-Object {
-        $mitigationMaskStr = $mitigationMaskStr.Replace("$_", "2")
-    }
-
-    # Convert the modified string back to byte array
-    $modifiedMask = [byte[]] -split ($mitigationMaskStr -replace '..', '0x$& ')
-    
-    # Apply modified mask to kernel
-    Set-ItemProperty -Path $regPath -Name "MitigationOptions" -Value $modifiedMask -Type Binary -Force
-    Set-ItemProperty -Path $regPath -Name "MitigationAuditOptions" -Value $modifiedMask -Type Binary -Force
-}
-
 function Remove-Edge {
     $edgeUpdatePath = "C:\Program Files (x86)\Microsoft\EdgeUpdate"
     if (Test-Path $edgeUpdatePath) {
@@ -985,7 +907,6 @@ function Main {
 
     # Install Windows update
     if($WindowsUpdate) {
-        Install-NuGET
         Install-WindowsUpdates
     }
     
@@ -1193,11 +1114,6 @@ function Main {
         Power-Settings
     }
 
-    # Configure BCD settings
-    if($BootSettings) {
-        BCD-settings
-    }
-
     # Registry settings
     if($RegistrySettings){
         $regSettings = "$tempFile\settings.reg"
@@ -1238,16 +1154,6 @@ function Main {
     
         # Disable schedule tasks
         Disable-ScheduledTasksByWildcard -Wildcards $wildcards 
-    }
-
-    # Configure taskbar
-    if($TaskbarSettings){
-        taskbar-settings
-    }
-
-    # Disable Process Mitigations
-    if($DisableMitigations){
-        Disable-ProcessMitigations     
     }
 
     # Disable memory compression
