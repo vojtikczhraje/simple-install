@@ -23,7 +23,7 @@ irm "https://raw.githubusercontent.com/vojtikczhraje/simple-install/main/simple-
 | `RegistrySettings` | Configure Windows settings via registry. | `true` |
 | `DisableScheduledTasks` | Disable windows scheduled tasks. This task can be running in background without you knowing it. | `true` |
 | `MemoryCompression ` | Disable memory compression on Windows. Can reduce CPU load but may increase physical memory usage and impact overall performance. | `true` |
-| `RemoveEdge ` | Disable Chromium Microsoft Edge. | `false` |
+| `RemoveEdge ` | Disable Chromium Microsoft Edge. | `true` |
 | `RemoveOneDrive ` | Remove OneDrive as another Windows bloatware but separately (some people use it that's why). | `true` |
 
 ### How to update settings in the table ^
