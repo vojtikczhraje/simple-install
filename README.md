@@ -20,11 +20,8 @@ irm "https://raw.githubusercontent.com/vojtikczhraje/simple-install/main/simple-
 | `RemoveBloatApplications` | Uninstall Windows pre-installed bloat (solitaire, 3d paint etc..). | `true` |
 | `DisableServices` | Disable some unnecessary Windows services (fax, beep, diagrack etc..). | `true` |
 | `PowerSettings` | Configure Windows power settings for better performance .| `true` |
-| `BootSettings` | Configure boot options (loading circle etc..). | `true` |
 | `RegistrySettings` | Configure Windows settings via registry. | `true` |
 | `DisableScheduledTasks` | Disable windows scheduled tasks. This task can be running in background without you knowing it. | `true` |
-| `TaskbarSettings` | Configure taskbar settings for better appearance. | `false` |
-| `DisableMitigations ` | Disable Windows mitigations. Can lead to better performance but worse security. | `true` |
 | `MemoryCompression ` | Disable memory compression on Windows. Can reduce CPU load but may increase physical memory usage and impact overall performance. | `true` |
 | `RemoveEdge ` | Disable Chromium Microsoft Edge. | `false` |
 | `RemoveOneDrive ` | Remove OneDrive as another Windows bloatware but separately (some people use it that's why). | `true` |
