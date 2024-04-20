@@ -63,17 +63,20 @@ WindowsActivation=true  # This turns Windows activation on.
 - Disables memory compression
 - Removes OneDrive
 - Removes Edge
+- Replaces Wallpapers
 
   
 
 ## Resources
 > [!NOTE]  
 > I would like to acknowledge that not all the work presented here is solely my own. Below, I've listed credits to the authors of certain contributions.
-- [PC-Tunning](https://github.com/amitxv/PC-Tuning)
+- [PC-Tunning](https://github.com/amitxv/PC-Tuning) - Not accessible 
 - [WinPostInstall](https://github.com/jhx0/WinPostInstall)
 - [Firefox](https://github.com/amitxv/firefox)
 - [OneDrive Uninstaller](https://github.com/ionuttbara/one-drive-uninstaller)
 - [Wallpaper replacer](https://github.com/amitxv/win-wallpaper)
 
+
 ## TODO
-- No idea
+- Make 7-zip run more than just .7z & Add 7-zip to context menu
+- After applying all things ask to apply more deep optimization --> run [Vitality](https://github.com/vojtikczhraje/Vitality)
