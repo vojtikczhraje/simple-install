@@ -79,4 +79,3 @@ WindowsActivation=true  # This turns Windows activation on.
 
 ## TODO
 - Make 7-zip run more than just .7z & Add 7-zip to context menu
-- After applying all things ask to apply more deep optimization --> run [Vitality](https://github.com/vojtikczhraje/Vitality)
