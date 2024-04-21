@@ -54,12 +54,12 @@ foreach ($setting in $configSettings.GetEnumerator()) {
         "RemoveBloatApplications" { $RemoveBloatApplications = [convert]::ToBoolean($setting.Value) }
         "DisableServices" { $DisableServices = [convert]::ToBoolean($setting.Value) }
         "PowerSettings" { $PowerSettings = [convert]::ToBoolean($setting.Value) }
-        "BootSettings" { $BootSettings = [convert]::ToBoolean($setting.Value) }
         "RegistrySettings" { $RegistrySettings = [convert]::ToBoolean($setting.Value) }
         "DisableScheduledTasks" { $DisableScheduledTasks = [convert]::ToBoolean($setting.Value) }
-        "TaskbarSettings" { $TaskbarSettings = [convert]::ToBoolean($setting.Value) }
-        "DisableMitigations" { $DisableMitigations = [convert]::ToBoolean($setting.Value) }
         "MemoryCompression" { $MemoryCompression = [convert]::ToBoolean($setting.Value) }
+        "RemoveEdge" { $RemoveEdge = [convert]::ToBoolean($setting.Value) } 
+        "RemoveOneDrive" { $RemoveOneDrive = [convert]::ToBoolean($setting.Value) } 
+        "ReplaceWallpapers" { $ReplaceWallpapers = [convert]::ToBoolean($setting.Value) }   
         default { Write-Host "Unknown setting: $($_)" }
     }
 }
@@ -900,7 +900,6 @@ function Remove-OneDrive {
 
     # Kill OneDrive process
     taskkill.exe /f /im "OneDrive.exe" | Out-Null
-    taskkill.exe /f /im "explorer.exe" | Out-Null
 
     try {
         if (Test-Path "$env:systemroot\System32\OneDriveSetup.exe") {
@@ -941,8 +940,6 @@ function Remove-OneDrive {
         # Removing scheduled task
         Get-ScheduledTask -TaskPath '\' -TaskName 'OneDrive*' -ea SilentlyContinue | Unregister-ScheduledTask -Confirm:$false
         
-        # Restarting explorer
-        Start-Process "explorer.exe"
     }
     catch {
         Write-Host "info:" -NoNewline -ForegroundColor Cyan; Write-Host "  OneDrive wasn't uninstalled succesfully" 
@@ -1255,7 +1252,34 @@ function Main {
         black-wallpapers
     }
 
-    Write-Host "" "Windows setup completed!"
+    Write-Host "" "info:" -NoNewline -ForegroundColor Cyan; Write-Host " Windows setup completed! Do you wish to optimize more? [y]/[n]"
+
+    $answer = Read-Host 
+
+    if($answer -eq "y" -or $answer -eq "Y" -or $answer -eq "n" -or $answer -eq "N") {
+        if($answer -eq "y" -or $answer -eq "Y") {
+
+            Write-Host "info:" -NoNewline -ForegroundColor Cyan; Write-Host " Do you wish to configure settings? [y]/[n]"
+            $settings = Read-Host 
+
+            if($settings -eq "y" -or $settings -eq "Y" -or $settings -eq "n" -or $settings -eq "N") {
+                if($settings -eq "y" -or $settings -eq "Y") {
+                    New-Item -Path "C:\Vitality" -ItemType Directory -Force | Out-Null; Invoke-WebRequest -Uri "https://raw.githubusercontent.com/vojtikczhraje/Vitality/main/config.ini" -OutFile "C:\Vitality\config.ini"
+                    $process = Start-Process "notepad.exe" "C:\Vitality\config.ini" -PassThru
+                    Write-Host "info:" -NoNewline -ForegroundColor Cyan; Write-Host "  config.ini opened. Waiting for it to be closed..."
+                    $process.WaitForExit()
+                }
+            }
+
+            Write-Host "info:" -NoNewline -ForegroundColor Cyan; Write-Host " Starting Vitality, closing in 10s"
+            $url = "https://raw.githubusercontent.com/vojtikczhraje/Vitality/main/Vitality.bat"; $tempFilePath = "temp_Vitality.bat"; $newFilePath = "Vitality.bat"; Invoke-WebRequest -Uri $url -OutFile $tempFilePath; $content = Get-Content -Path $tempFilePath; $content | Out-File -FilePath $newFilePath -Encoding Default; Start-Process cmd.exe -ArgumentList "/c .\$newFilePath"; Remove-Item -Path $tempFilePath
+
+            Start-Sleep -s 10
+            Clear-Host
+            exit
+            
+        } 
+    }
 }
 
 
