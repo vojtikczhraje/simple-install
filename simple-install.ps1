@@ -15,6 +15,7 @@ param (
     [switch]$RemoveEdge = $true,
     [switch]$RemoveOneDrive = $true,
     [switch]$ReplaceWallpapers = $true,
+    [switch]$7zip = $true,
     [string]$tempFile = "C:\temp",
     [string]$configFile = "C:\config.ini"
 )
@@ -60,6 +61,7 @@ foreach ($setting in $configSettings.GetEnumerator()) {
         "RemoveEdge" { $RemoveEdge = [convert]::ToBoolean($setting.Value) } 
         "RemoveOneDrive" { $RemoveOneDrive = [convert]::ToBoolean($setting.Value) } 
         "ReplaceWallpapers" { $ReplaceWallpapers = [convert]::ToBoolean($setting.Value) }   
+        "7zip" { $7zip = [convert]::ToBoolean($setting.Value) }   
         default { Write-Host "Unknown setting: $($_)" }
     }
 }
@@ -87,9 +89,10 @@ function menu {
     Write-Host "                              |    Windows Features = " -NoNewline; Write-Host $WindowsFeatures -ForegroundColor $(if ($WindowsFeatures) {'Green'} else {'Red'})
     Write-Host "                              |    Visual Cpp Redistributable = " -NoNewline; Write-Host $VisualCppRedistributable -ForegroundColor $(if ($VisualCppRedistributable) {'Green'} else {'Red'})
     Write-Host "                              |    Install Applications = " -NoNewline; Write-Host $InstallApplications -ForegroundColor $(if ($InstallApplications) {'Green'} else {'Red'})
+    Write-Host "                              |    7-zip = " -NoNewline; Write-Host $7zip -ForegroundColor $(if ($7zip) {'Green'} else {'Red'})
     Write-Host "                              |    Install Firefox = " -NoNewline; Write-Host $InstallFirefox -ForegroundColor $(if ($InstallFirefox) {'Green'} else {'Red'})
-    Write-Host "                              |    Remove Bloat Applications = " -NoNewline; Write-Host $RemoveBloatApplications -ForegroundColor $(if ($RemoveBloatApplications) {'Green'} else {'Red'})
-    Write-Host "          simple-install      |    Disable Services = " -NoNewline; Write-Host $DisableServices -ForegroundColor $(if ($DisableServices) {'Green'} else {'Red'})
+    Write-Host "          simple-install      |    Remove Bloat Applications = " -NoNewline; Write-Host $RemoveBloatApplications -ForegroundColor $(if ($RemoveBloatApplications) {'Green'} else {'Red'})
+    Write-Host "                              |    Disable Services = " -NoNewline; Write-Host $DisableServices -ForegroundColor $(if ($DisableServices) {'Green'} else {'Red'})
     Write-Host "                              |    Power Settings = " -NoNewline; Write-Host $PowerSettings -ForegroundColor $(if ($PowerSettings) {'Green'} else {'Red'})
     Write-Host "                              |    Registry Settings = " -NoNewline; Write-Host $RegistrySettings -ForegroundColor $(if ($RegistrySettings) {'Green'} else {'Red'})
     Write-Host "                              |    Disable Scheduled Tasks = " -NoNewline; Write-Host $DisableScheduledTasks -ForegroundColor $(if ($DisableScheduledTasks) {'Green'} else {'Red'})
@@ -97,6 +100,7 @@ function menu {
     Write-Host "                              |    Remove Edge = " -NoNewline; Write-Host $RemoveEdge -ForegroundColor $(if ($RemoveEdge) {'Green'} else {'Red'})
     Write-Host "                              |    Remove OneDrive = " -NoNewline; Write-Host $RemoveOneDrive -ForegroundColor $(if ($RemoveOneDrive) {'Green'} else {'Red'})
     Write-Host "                              |    Replace Wallpapers = " -NoNewline; Write-Host $ReplaceWallpapers -ForegroundColor $(if ($ReplaceWallpapers) {'Green'} else {'Red'})
+
     Write-Host ""
     Write-Host ""
 
@@ -240,7 +244,7 @@ function apps {
         scoop bucket add main
 
         # Present a menu for selecting which development tools to install
-        $toolsToInstall = @("git", "python", "nodejs", "mingw", "7zip")
+        $toolsToInstall = @("git", "python", "nodejs", "mingw")
         Write-Host "Select the tools you want to install. Use commas to separate multiple choices (e.g., 1,2)."
         for ($i=0; $i -lt $toolsToInstall.Length; $i++) {
             Write-Host "$($i+1): $($toolsToInstall[$i])"
@@ -957,6 +961,142 @@ function black-wallpapers {
         Write-Host "error:" -NoNewline -ForegroundColor Red; Write-Host "  Wallpapers weren't replaced succesfully"
     }
 
+function 7zip {
+    Invoke-Command -ScriptBlock {
+        Write-Host "info:" -NoNewline -ForegroundColor Cyan; Write-Host "  Installing & configuring 7-zip"
+
+        # Corrected file path with environment variable
+        $FileName = "$env:TEMP\7z2404-x64.exe"
+        
+        # Downloading the 7-Zip installer
+        Invoke-WebRequest -Uri "https://www.7-zip.org/a/7z2404-x64.exe" -OutFile $FileName | Out-Null
+        
+        # Direct use of the full InstallerPath
+        $InstallerPath = $FileName
+        
+        # Install 7zip in silent mode
+        Start-Process -FilePath $InstallerPath -ArgumentList '/S' -Wait
+        
+        # Get 7-Zip install location
+        $sevenZipPath = Get-ChildItem 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall' | `
+            Where-Object { $_.GetValue('DisplayName') -like '*7-zip*' -and $_.GetValue('InstallLocation') } | `
+            Get-ItemPropertyValue -Name 'InstallLocation'
+        
+        # Handle array or missing path
+        if ($sevenZipPath -is [System.Array]) {
+            $sevenZipPath = $sevenZipPath[0]
+        }
+        if (-not $sevenZipPath) {
+            $sevenZipPath = 'C:\Program Files\7-Zip\'
+        }
+        
+        # Construct paths to executable and DLL
+        $sevenZipExePath = Join-Path -Path $sevenZipPath -ChildPath '7zFM.exe'
+        $sevenZipDllPath = Join-Path -Path $sevenZipPath -ChildPath '7z.dll'
+        
+        # Backup existing CompressedFolder registry settings if it exists
+        if (Test-Path -Path 'HKLM:\SOFTWARE\Classes\CompressedFolder') {
+            Rename-Item -Path 'HKLM:\SOFTWARE\Classes\CompressedFolder' -NewName 'CompressedFolder.BackUp' | Out-Null
+        }
+        
+
+            $fileTypes = @{
+                '7z'       = '0'
+                'zip'      = '1'
+                'rar'      = '3'
+                '001'      = '9'
+                #'cab'      = '7'
+                #'iso'      = '8'
+                'xz'       = '23'
+                'txz'      = '23'
+                'lzma'     = '16'
+                'tar'      = '13'
+                'cpio'     = '12'
+                'bz2'      = '2'
+                'bzip2'    = '2'
+                'tbz2'     = '2'
+                'tbz'      = '2'
+                'gz'       = '14'
+                'gzip'     = '14'
+                'tgz'      = '14'
+                'tpz'      = '14'
+                'z'        = '5'
+                'taz'      = '5'
+                'lzh'      = '6'
+                'lha'      = '6'
+                'rpm'      = '10'
+                'deb'      = '11'
+                'arj'      = '4'
+                #'vhd'      = '20'
+                #'vhdx'     = '20'
+                'wim'      = '15'
+                'swm'      = '15'
+                'esd'      = '15'
+                'fat'      = '21'
+                'ntfs'     = '22'
+                'dmg'      = '17'
+                'hfs'      = '18'
+                'xar'      = '19'
+                'squashfs' = '24'
+                'apfs'     = '25'
+            }
+        
+        
+            # Create registry entries
+            foreach ($entry in $fileTypes.GetEnumerator()) {
+                $fileType = $entry.Key
+                $iconIndex = $entry.Value
+        
+                # Paths
+                $fileTypePath = "HKLM:\SOFTWARE\Classes\.$fileType"
+                $progIdPath = "HKLM:\SOFTWARE\Classes\7-Zip.$fileType"
+                $defaultIconPath = "$progIdPath\DefaultIcon"
+                $shellPath = "$progIdPath\shell"
+                $openPath = "$shellPath\open"
+                $commandPath = "$openPath\command"
+        
+                # FileType
+                if (-not (Test-Path -Path $fileTypePath)) {
+                    New-Item -Path $fileTypePath -Force | Out-Null
+                }
+                Set-ItemProperty -Path $fileTypePath -Name '(Default)' -Value "7-Zip.$fileType" -Force | Out-Null
+        
+                if ((Test-Path -Path "$fileTypePath\PersistentHandler")) {
+                    Remove-Item -Path "$fileTypePath\PersistentHandler" -Force | Out-Null
+                }
+        
+                # ProgId
+                if (-not (Test-Path -Path $progIdPath)) {
+                    New-Item -Path $progIdPath -Force | Out-Null
+                }
+                Set-ItemProperty -Path $progIdPath -Name '(Default)' -Value "$fileType Archive" -Force | Out-Null
+        
+                # DefaultIcon
+                if (-not (Test-Path -Path $defaultIconPath)) {
+                    New-Item -Path $defaultIconPath -Force | Out-Null
+                }
+                Set-ItemProperty -Path $defaultIconPath -Name '(Default)' -Value "$sevenZipDllPath,$iconIndex" -Force | Out-Null
+        
+                # shell
+                if (-not (Test-Path -Path $shellPath)) {
+                    New-Item -Path $shellPath -Force | Out-Null
+                }
+                Set-ItemProperty -Path $shellPath -Name '(Default)' -Value 'open' -Force | Out-Null
+        
+                # open
+                if (-not (Test-Path -Path $openPath)) {
+                    New-Item -Path $openPath -Force | Out-Null
+                }
+        
+                # command
+                if (-not (Test-Path -Path $commandPath)) {
+                    New-Item -Path $commandPath -Force | Out-Null
+                }
+                Set-ItemProperty -Path $commandPath -Name '(Default)' -Value "`"$sevenZipExePath`" `"%1`"" -Force | Out-Null
+            }
+        }
+    
+}
     
     
 }
@@ -1251,6 +1391,11 @@ function Main {
     if($ReplaceWallpapers) {
         black-wallpapers
     }
+
+    if($7zip) {
+        7zip
+    }
+
 
     Write-Host "" "info:" -NoNewline -ForegroundColor Cyan; Write-Host " Windows setup completed! Do you wish to optimize more? [y]/[n]"
 
