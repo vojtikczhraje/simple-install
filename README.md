@@ -38,7 +38,7 @@ irm "https://raw.githubusercontent.com/vojtikczhraje/simple-install/main/config.
 
 ### Example:
 ```ini
-WindowsUpdate=false  # This turns Windows updates on.
+WindowsUpdate=false  # This turns Windows updates off.
 WindowsActivation=true  # This turns Windows activation on.
 ...
 ```
