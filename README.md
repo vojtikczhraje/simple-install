@@ -46,9 +46,6 @@ WindowsActivation=true  # This turns Windows activation on.
 ---
 
 ## Features
-> [!WARNING]  
-> Please be aware, the following applications are installed automatically without permission: <br />
-> `git, python, nodejs, mingw, 7zip`
 - Activates Windows
 - Installs Windows update
 - Installs Windows features (NET Framework 3.5)
@@ -75,7 +72,8 @@ WindowsActivation=true  # This turns Windows activation on.
 - [Firefox](https://github.com/amitxv/firefox)
 - [OneDrive Uninstaller](https://github.com/ionuttbara/one-drive-uninstaller)
 - [Wallpaper replacer](https://github.com/amitxv/win-wallpaper)
+- [7-zip installer](https://github.com/MichaelMasuch/Silent-Install-of-7-Zip)
 
 
 ## TODO
-- Make 7-zip run more than just .7z & Add 7-zip to context menu
+- Add 7-zip to context menu
