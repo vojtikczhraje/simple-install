@@ -20,7 +20,9 @@ param (
     [string]$configFile = "C:\config.ini"
 )
 
+# Configure console
 [console]::WindowWidth=75; [console]::WindowHeight=25; [console]::BufferWidth=[console]::WindowWidth
+$host.UI.RawUI.WindowTitle = "simple-install | https://github.com/vojtikczhraje/simple-install"
 
 # Define a function to parse the configuration file
 function Parse-ConfigFile {
@@ -39,6 +41,7 @@ function Parse-ConfigFile {
     }
     return $configSettings
 }
+
 
 # Read settings from the configuration file
 $configSettings = Parse-ConfigFile -ConfigPath $configFile
@@ -79,6 +82,34 @@ function Admin-Check {
 
 function menu {
     [console]::WindowWidth=75; [console]::WindowHeight=25; [console]::BufferWidth=[console]::WindowWidth
+    while ($true) {
+    $host.UI.RawUI.WindowTitle = "simple-install | https://github.com/vojtikczhraje/simple-install"
+
+    # Read settings from the configuration file
+    $configSettings = Parse-ConfigFile -ConfigPath $configFile
+
+    # Override default parameters with settings from the configuration file
+    foreach ($setting in $configSettings.GetEnumerator()) {
+        switch ($setting.Key) {
+            "WindowsUpdate" { $WindowsUpdate = [convert]::ToBoolean($setting.Value) }
+            "WindowsActivation" { $WindowsActivation = [convert]::ToBoolean($setting.Value) }
+            "WindowsFeatures" { $WindowsFeatures = [convert]::ToBoolean($setting.Value) }
+            "VisualCppRedistributable" { $VisualCppRedistributable = [convert]::ToBoolean($setting.Value) }
+            "InstallApplications" { $InstallApplications = [convert]::ToBoolean($setting.Value) }
+            "InstallFirefox" { $InstallFirefox = [convert]::ToBoolean($setting.Value) }
+            "RemoveBloatApplications" { $RemoveBloatApplications = [convert]::ToBoolean($setting.Value) }
+            "DisableServices" { $DisableServices = [convert]::ToBoolean($setting.Value) }
+            "PowerSettings" { $PowerSettings = [convert]::ToBoolean($setting.Value) }
+            "RegistrySettings" { $RegistrySettings = [convert]::ToBoolean($setting.Value) }
+            "DisableScheduledTasks" { $DisableScheduledTasks = [convert]::ToBoolean($setting.Value) }
+            "MemoryCompression" { $MemoryCompression = [convert]::ToBoolean($setting.Value) }
+            "RemoveEdge" { $RemoveEdge = [convert]::ToBoolean($setting.Value) } 
+            "RemoveOneDrive" { $RemoveOneDrive = [convert]::ToBoolean($setting.Value) } 
+            "ReplaceWallpapers" { $ReplaceWallpapers = [convert]::ToBoolean($setting.Value) }   
+            "7zip" { $7zip = [convert]::ToBoolean($setting.Value) }   
+            default { Write-Host "Unknown setting: $($_)" }
+        }
+    }
 
     Clear-Host
 
@@ -89,7 +120,7 @@ function menu {
     Write-Host "                              |    Windows Features = " -NoNewline; Write-Host $WindowsFeatures -ForegroundColor $(if ($WindowsFeatures) {'Green'} else {'Red'})
     Write-Host "                              |    Visual Cpp Redistributable = " -NoNewline; Write-Host $VisualCppRedistributable -ForegroundColor $(if ($VisualCppRedistributable) {'Green'} else {'Red'})
     Write-Host "                              |    Install Applications = " -NoNewline; Write-Host $InstallApplications -ForegroundColor $(if ($InstallApplications) {'Green'} else {'Red'})
-    Write-Host "                              |    7-zip = " -NoNewline; Write-Host $7zip -ForegroundColor $(if ($7zip) {'Green'} else {'Red'})
+    Write-Host "                              |    Install & configure 7-zip  = " -NoNewline; Write-Host $7zip -ForegroundColor $(if ($7zip) {'Green'} else {'Red'})
     Write-Host "                              |    Install Firefox = " -NoNewline; Write-Host $InstallFirefox -ForegroundColor $(if ($InstallFirefox) {'Green'} else {'Red'})
     Write-Host "          simple-install      |    Remove Bloat Applications = " -NoNewline; Write-Host $RemoveBloatApplications -ForegroundColor $(if ($RemoveBloatApplications) {'Green'} else {'Red'})
     Write-Host "                              |    Disable Services = " -NoNewline; Write-Host $DisableServices -ForegroundColor $(if ($DisableServices) {'Green'} else {'Red'})
@@ -104,9 +135,11 @@ function menu {
     Write-Host ""
     Write-Host ""
 
-    Write-Host "Do you wish to change configuration? [y]/[n]"
 
-    $answer = Read-Host 
+   
+    Write-Host          "                Do you wish to change configuration? [y]/[n]"
+
+    $answer =  Read-Host "                                    >" 
 
     if($answer -eq "y" -or $answer -eq "Y" -or $answer -eq "n" -or $answer -eq "N") {
         if($answer -eq "y" -or $answer -eq "Y") {
@@ -119,19 +152,22 @@ function menu {
 
         # Open config.ini and wait for it to be closed
         $process = Start-Process "notepad.exe" "C:\config.ini" -PassThru
-        Write-Host "info:" -NoNewline -ForegroundColor Cyan; Write-Host "  config.ini opened. Waiting for it to be closed..."
+        Write-Host "           info:" -NoNewline -ForegroundColor Cyan; Write-Host "  config.ini opened. Waiting for it to be closed..."
         $process.WaitForExit()
 
-        Start-Process "powershell.exe" -ArgumentList "-NoProfile `"irm 'https://raw.githubusercontent.com/vojtikczhraje/simple-install/main/simple-install.ps1' | iex`""
-        exit
+        } else {
+            # Break of the loop if the answer is n/N
+            break
+        }
 
-        } 
     } else {
-        Write-Host "error:" -NoNewline -ForegroundColor Red; Write-Host "  Wrong input, restarting..."
-        Start-Sleep -s 3
-        Start-Process "powershell.exe" -ArgumentList "-NoProfile `"irm 'https://raw.githubusercontent.com/vojtikczhraje/simple-install/main/simple-install.ps1' | iex`""
-        exit
+        $host.UI.RawUI.WindowTitle = "error: Wrong input, restarting..."
+        Write-Host "                    error:" -NoNewline -ForegroundColor Red; Write-Host "  Wrong input, restarting..."
+        Start-Sleep -s 2
     }
+
+    }
+    
 
 }
 
@@ -403,7 +439,7 @@ function 7zip {
             }
         }
 
-    # Set the path for the ContextMenuHandlers for 7-Zip
+<#     # Set the path for the ContextMenuHandlers for 7-Zip
     $ContextMenuPath = "HKCR:\*\shellex\ContextMenuHandlers\7-Zip"
 
     # Set the CLSID for 7-Zip integration
@@ -415,7 +451,7 @@ function 7zip {
     }
 
     # Set the default property of the key with the CLSID of 7-Zip
-    Set-ItemProperty -Path $ContextMenuPath -Name "(Default)" -Value $clsid | Out-Null
+    Set-ItemProperty -Path $ContextMenuPath -Name "(Default)" -Value $clsid | Out-Null #>
     
 }
 # Install firefox
@@ -1122,7 +1158,7 @@ function Main {
 
     # Menu
     menu
-    Write-Host "info:" -NoNewline -ForegroundColor Cyan; Write-Host "  Starting in 3 sec..."
+    Write-Host "                       info:" -NoNewline -ForegroundColor Cyan; Write-Host "  Starting in 3 sec..."
     Start-Sleep -s 3
     Clear-Host
 
@@ -1411,15 +1447,16 @@ function Main {
     }
 
 
-    Write-Host "" "info:" -NoNewline -ForegroundColor Cyan; Write-Host " Windows setup completed! Do you wish to optimize more? [y]/[n]"
+    Write-Host "info:" -NoNewline -ForegroundColor Cyan; Write-Host " Windows setup completed! Do you wish to optimize more? [y]/[n]"
 
-    $answer = Read-Host 
+    $answer = Read-Host ">"
+    Clear-Host
 
     if($answer -eq "y" -or $answer -eq "Y" -or $answer -eq "n" -or $answer -eq "N") {
         if($answer -eq "y" -or $answer -eq "Y") {
 
             Write-Host "info:" -NoNewline -ForegroundColor Cyan; Write-Host " Do you wish to configure settings? [y]/[n]"
-            $settings = Read-Host 
+            $settings = Read-Host ">"
 
             if($settings -eq "y" -or $settings -eq "Y" -or $settings -eq "n" -or $settings -eq "N") {
                 if($settings -eq "y" -or $settings -eq "Y") {
@@ -1430,10 +1467,10 @@ function Main {
                 }
             }
 
-            Write-Host "info:" -NoNewline -ForegroundColor Cyan; Write-Host " Starting Vitality, closing in 10s"
+            Write-Host "info:" -NoNewline -ForegroundColor Cyan; Write-Host " Starting Vitality, closing in 5s"
             $url = "https://raw.githubusercontent.com/vojtikczhraje/Vitality/main/Vitality.bat"; $tempFilePath = "temp_Vitality.bat"; $newFilePath = "Vitality.bat"; Invoke-WebRequest -Uri $url -OutFile $tempFilePath; $content = Get-Content -Path $tempFilePath; $content | Out-File -FilePath $newFilePath -Encoding Default; Start-Process cmd.exe -ArgumentList "/c .\$newFilePath"; Remove-Item -Path $tempFilePath
 
-            Start-Sleep -s 10
+            Start-Sleep -s 5
             Clear-Host
             exit
             
