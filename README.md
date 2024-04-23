@@ -88,7 +88,7 @@ WindowsActivation=true  # This turns Windows activation on.
 <details> 
 <summary><h2>TODO</h2></summary>
 
-- ?
+- No idea
 
 </details>
 
