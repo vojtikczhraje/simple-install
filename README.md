@@ -45,7 +45,13 @@ WindowsActivation=true  # This turns Windows activation on.
 
 ---
 
-## Features
+
+
+<details> 
+<summary><h2>Features</h2></summary>
+
+
+
 - Activates Windows
 - Installs Windows update
 - Installs Windows features (NET Framework 3.5)
@@ -62,6 +68,10 @@ WindowsActivation=true  # This turns Windows activation on.
 - Removes Edge
 - Replaces Wallpapers
 
+</details>
+
+
+
   
 
 ## Resources
@@ -76,4 +86,5 @@ WindowsActivation=true  # This turns Windows activation on.
 
 
 ## TODO
-- Add 7-zip to context menu
+- ?
+
