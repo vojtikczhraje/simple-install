@@ -47,7 +47,7 @@ WindowsActivation=true  # This turns Windows activation on.
 
 
 
-<details> 
+<details open> 
 <summary><h2>Features</h2></summary>
 
 
@@ -85,6 +85,10 @@ WindowsActivation=true  # This turns Windows activation on.
 - [7-zip installer](https://github.com/MichaelMasuch/Silent-Install-of-7-Zip)
 
 
-## TODO
+<details> 
+<summary><h2>TODO</h2></summary>
+
 - ?
+
+</details>
 
