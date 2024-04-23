@@ -225,35 +225,6 @@ rem quickedit reset code is added at the starting of the script instead of here 
 exit /b
 )
 
-::========================================================================================================================================
-
-::  Check for updates
-
-set -=
-set old=
-
-for /f "delims=[] tokens=2" %%# in ('ping -4 -n 1 updatecheck.mass%-%grave.dev') do (
-if not [%%#]==[] (echo "%%#" | find "127.69" %nul1% && (echo "%%#" | find "127.69.%masver%" %nul1% || set old=1))
-)
-
-if defined old (
-echo ________________________________________________
-%eline%
-echo You are running outdated version MAS %masver%
-echo ________________________________________________
-echo:
-if not %_unattended%==1 (
-echo [1] Get Latest MAS
-echo [0] Continue Anyway
-echo:
-call :dk_color %_Green% "Enter a menu option in the Keyboard [1,0] :"
-choice /C:10 /N
-if !errorlevel!==2 rem
-if !errorlevel!==1 (start ht%-%tps://github.com/mass%-%gravel/Microsoft-Acti%-%vation-Scripts & start %mas% & exit /b)
-)
-)
-
-::========================================================================================================================================
 
 cls
 mode 110, 34
@@ -298,15 +269,9 @@ echo:
 call :dk_checkperm
 if defined _perm (
 cls
-echo ___________________________________________________________________________________________
-echo:
-call :dk_color2 %_White% "     " %Green% "Checking: %winos% is Permanently Activated."
-call :dk_color2 %_White% "     " %Gray% "Activation is not required."
-echo ___________________________________________________________________________________________
-if %_unattended%==1 goto dk_done
-echo:
-choice /C:10 /N /M ">    [1] Activate [0] %_exitmsg% : "
-if errorlevel 2 exit /b
+echo Windows is activated... closing in 3s
+timeout /t 3 /nobreak >nul
+exit
 )
 cls
 
