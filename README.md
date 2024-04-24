@@ -7,6 +7,7 @@ Open PowerShell as administrator and enter the command below. <br />
 irm "https://raw.githubusercontent.com/vojtikczhraje/simple-install/main/simple-install.ps1" | iex
 ```
 ---
+
 ## Default settings
 
 | Option | Notes | Value |
@@ -50,8 +51,6 @@ WindowsActivation=true  # This turns Windows activation on.
 <details open> 
 <summary><h2>Features</h2></summary>
 
-
-
 - Activates Windows
 - Installs Windows update
 - Installs Windows features (NET Framework 3.5)
@@ -71,9 +70,6 @@ WindowsActivation=true  # This turns Windows activation on.
 </details>
 
 
-
-  
-
 ## Resources
 > [!NOTE]  
 > I would like to acknowledge that not all the work presented here is solely my own. Below, I've listed credits to the authors of certain contributions.
@@ -88,7 +84,8 @@ WindowsActivation=true  # This turns Windows activation on.
 <details> 
 <summary><h2>TODO</h2></summary>
 
-- No idea
+- Improve comments on program functionality
+- Enhance user feedback
 
 </details>
 
