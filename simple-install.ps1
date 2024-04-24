@@ -80,8 +80,12 @@ function Admin-Check {
     
 }
 
+# UI at start
 function menu {
+    # Change console size to width = 75 & height = 25
     [console]::WindowWidth=75; [console]::WindowHeight=25; [console]::BufferWidth=[console]::WindowWidth
+
+    # Loop for updating 
     while ($true) {
     $host.UI.RawUI.WindowTitle = "simple-install | https://github.com/vojtikczhraje/simple-install"
 
@@ -131,18 +135,19 @@ function menu {
     Write-Host "                              |    Remove Edge = " -NoNewline; Write-Host $RemoveEdge -ForegroundColor $(if ($RemoveEdge) {'Green'} else {'Red'})
     Write-Host "                              |    Remove OneDrive = " -NoNewline; Write-Host $RemoveOneDrive -ForegroundColor $(if ($RemoveOneDrive) {'Green'} else {'Red'})
     Write-Host "                              |    Replace Wallpapers = " -NoNewline; Write-Host $ReplaceWallpapers -ForegroundColor $(if ($ReplaceWallpapers) {'Green'} else {'Red'})
-
     Write-Host ""
     Write-Host ""
 
-
-   
     Write-Host          "                Do you wish to change configuration? [y]/[n]"
 
-    $answer =  Read-Host "                                    >" 
+    # Read input
+    $input =  Read-Host "                                    >" 
 
-    if($answer -eq "y" -or $answer -eq "Y" -or $answer -eq "n" -or $answer -eq "N") {
-        if($answer -eq "y" -or $answer -eq "Y") {
+    # If input is Y or N conitnue else restart
+    if($input -eq "y" -or $input -eq "Y" -or $input -eq "n" -or $input -eq "N") {
+
+        # If input is Y configure settings else continue
+        if($input -eq "y" -or $input -eq "Y") {
         # Check if config.ini exists
         if (-Not (Test-Path "C:\config.ini")) {
             # Download the file
@@ -156,11 +161,11 @@ function menu {
         $process.WaitForExit()
 
         } else {
-            # Break of the loop if the answer is n/N
+            # Break of the loop if the input is n/N
             break
         }
-
     } else {
+        # Wrong input restarting
         $host.UI.RawUI.WindowTitle = "error: Wrong input, restarting..."
         Write-Host "                    error:" -NoNewline -ForegroundColor Red; Write-Host "  Wrong input, restarting..."
         Start-Sleep -s 2
@@ -183,6 +188,7 @@ function Create-TempFolder{
 # Install Windows Updates
 function Install-WindowsUpdates {
 
+    # Get packages for Windows update
     Install-PackageProvider -Name NuGet -Force | Out-Null
 
     try {
@@ -225,13 +231,17 @@ function Install-VisualCppRedistributable {
     # Now that $path is correctly defined, Start-Process should work without issues
     Start-Process -FilePath $path -ArgumentList "/ai /gm2" -Wait
 }
+
+# Activate Windows
 function Activate-Windows {
     Write-Host "info:" -NoNewline -ForegroundColor Cyan; Write-Host "  Activating windows." 
 
+    # Create variables for further use
     $url = "https://raw.githubusercontent.com/vojtikczhraje/simple-install/main/assets/HWID_Activation.cmd"
     $fileName = "hwid_activation.cmd"
     $path = Join-Path -Path $tempFile -ChildPath $fileName
     
+    # Try to download the file
     Try {
         # Download the file
         $content = Invoke-RestMethod -Uri $url -ErrorAction Stop
@@ -247,6 +257,8 @@ function Activate-Windows {
         # Run file -WindowStyle Minimized
         Start-Process "cmd.exe" -ArgumentList "/c `"$path`"" -WindowStyle Minimized
     }
+
+    # Error handling
     Catch {
         Write-Host "error:" -NoNewline -ForegroundColor Red; Write-Host "  An error occurred while trying to download $fileName. $_"
     }
@@ -255,17 +267,24 @@ function Activate-Windows {
 
 # Install scoop(package manager), apps
 function apps {
+
+    # Test if scoop is installed, if not install it
     $scoopInstalled = Test-Path -Path "$env:USERPROFILE\scoop"
     if ($scoopInstalled) {
+        # Scoop is installed
         Write-Host "info:" -NoNewline -ForegroundColor Cyan; Write-Host "  Scoop is already installed."
     } else {
+
+        # Scoop is not installed, install scoop
         Write-Host "info:" -NoNewline -ForegroundColor Cyan; Write-Host "  Scoop is not installed, installing now..."
     
+        # Scoop doesn't directly suport running as admin so bypass it with -RunAsAdmin
         iex "& {$(irm get.scoop.sh)} -RunAsAdmin"
     
         # Update the check for Scoop installation after the installation attempt
         $scoopInstalled = Test-Path -Path "$env:USERPROFILE\scoop"
     
+        # Check if scoop was installed succesufully
         if ($scoopInstalled) {
             Write-Host "info:" -NoNewline -ForegroundColor Cyan; Write-Host "  Scoop has been successfully installed."
         } else {
@@ -275,6 +294,7 @@ function apps {
         }
     }
 
+    # Install apps
     if ($scoopInstalled) {
         # Configure repositories
         scoop bucket add main
@@ -286,9 +306,13 @@ function apps {
             Write-Host "$($i+1): $($toolsToInstall[$i])"
         }
         
+        # Read input
         $userInput = Read-Host "Enter your choices"
+
+        # Convert user choice to index
         $selectedIndexes = $userInput.Split(',') | ForEach-Object { [int]$_ - 1 }
 
+        # Installs selected tools & handles invalid selections
         foreach ($index in $selectedIndexes) {
             if ($index -ge 0 -and $index -lt $toolsToInstall.Length) {
                 $tool = $toolsToInstall[$index]
@@ -304,6 +328,7 @@ function apps {
     }
 }
 
+# Install and configure 7-zip
 function 7zip {
     Invoke-Command -ScriptBlock {
         Write-Host "info:" -NoNewline -ForegroundColor Cyan; Write-Host "  Installing & configuring 7-zip"
@@ -438,22 +463,9 @@ function 7zip {
                 Set-ItemProperty -Path $commandPath -Name '(Default)' -Value "`"$sevenZipExePath`" `"%1`"" -Force | Out-Null
             }
         }
-
-<#     # Set the path for the ContextMenuHandlers for 7-Zip
-    $ContextMenuPath = "HKCR:\*\shellex\ContextMenuHandlers\7-Zip"
-
-    # Set the CLSID for 7-Zip integration
-    $clsid = "{23170F69-40C1-278A-1000-000100020000}"
-
-    # Check if the registry key already exists
-    if (-not (Test-Path $ContextMenuPath)) {
-        New-Item -Path $ContextMenuPath -Force | Out-Null
-    }
-
-    # Set the default property of the key with the CLSID of 7-Zip
-    Set-ItemProperty -Path $ContextMenuPath -Name "(Default)" -Value $clsid | Out-Null #>
     
 }
+
 # Install firefox
 function firefox {
     Write-Host "info:" -NoNewline -ForegroundColor Cyan; Write-Host "  Installing firefox." 
@@ -461,6 +473,7 @@ function firefox {
     Start-Process -FilePath "powershell.exe" -ArgumentList "-NoProfile", "-Command", $scriptCommand -Wait 
 }
 
+# Remove bloat apps
 function Remove-Apps {
     param (
         [string[]]$AppList
@@ -468,6 +481,7 @@ function Remove-Apps {
 
     Write-Host "info:" -NoNewline -ForegroundColor Cyan; Write-Host "  Removing unwatend Apps"
 
+    # Delete apps that are in list
     foreach($App in $AppList) {
         Get-AppxPackage "*$App*" | Remove-AppxPackage -AllUsers -ErrorAction 'SilentlyContinue' | Out-Null
         Write-Host "Removing: $App" 
@@ -481,13 +495,14 @@ function Remove-Apps {
         [string[]]$ServiceNames
     )
 
+    # Disable services that are in list
     foreach ($service in $ServiceNames) {
         $serviceObj = Get-Service -Name $service -ErrorAction SilentlyContinue
         if ($serviceObj) {
-            Write-Host "disabling service: $service"
+            Write-Host "info:" -NoNewline -ForegroundColor Cyan; Write-Host "  info: disabling service: $service"
             Set-Service -Name $service -StartupType Disabled -ErrorAction SilentlyContinue
         } else {
-            Write-Warning "Service $service not found."
+            Write-Host "info:" -NoNewline -ForegroundColor Cyan; Write-Host "  Service $service not found."
         }
     }
 
@@ -1019,6 +1034,10 @@ Windows Registry Editor Version 5.00
 [HKEY_CURRENT_USER\Console\%SystemRoot%_System32_WindowsPowerShell_v1.0_powershell.exe]
 "FontSize"=dword:000c0000
 
+; add 7-zip to context menu
+[HKEY_CLASSES_ROOT\*\shellex\ContextMenuHandlers\7-Zip]
+@="{23170F69-40C1-278A-1000-000100020000}"
+
 "@
 
     # Check if the temporary directory for the .reg file exists, if not, create it
@@ -1051,7 +1070,7 @@ function Disable-ScheduledTasksByWildcard {
         $filteredTasks = $allTasks | Where-Object { $_.TaskName -like "*$wildcard*" }
 
         if ($filteredTasks.Count -eq 0) {
-            <# Write-Host "No tasks match the pattern: $wildcard" #>
+            Write-Host "info:" -NoNewline -ForegroundColor Cyan; Write-Host "  No tasks match the pattern: $wildcard" #>
             continue
         }
 
@@ -1059,9 +1078,9 @@ function Disable-ScheduledTasksByWildcard {
             # Disable each task
             try {
                 Disable-ScheduledTask -TaskName $task.TaskName -TaskPath $task.TaskPath -Confirm:$false
-                <# Write-Host "Successfully disabled task: $($task.TaskName)" #>
+                Write-Host "info:" -NoNewline -ForegroundColor Cyan; Write-Host "  Successfully disabled task: $($task.TaskName)" #>
             } catch {
-                <# Write-Warning "Failed to disable task: $($task.TaskName). error:" -NoNewline -ForegroundColor Red; Write-Host "  $_" #>
+                Write-Host "error:" -NoNewline -ForegroundColor Red; Write-Host "  Failed to disable task: $($task.TaskName). error:" -NoNewline -ForegroundColor Red; Write-Host "  $_" #>
             }
         }
     }
@@ -1069,8 +1088,13 @@ function Disable-ScheduledTasksByWildcard {
     Write-Host "info:" -NoNewline -ForegroundColor Cyan; Write-Host "  Scheduled tasks were succesfully disabled."
 }
 
-function Remove-Edge {
+# Disable Edge
+function Disable-Edge {
+
+    # Set edge path
     $edgeUpdatePath = "C:\Program Files (x86)\Microsoft\EdgeUpdate"
+
+    # Test if path exists
     if (Test-Path $edgeUpdatePath) {
         Remove-Item -Path $edgeUpdatePath -Recurse -Force -ErrorAction SilentlyContinue
         Write-Host "info:" -NoNewline -ForegroundColor Cyan; Write-Host "  EdgeUpdate directory removed."
@@ -1086,6 +1110,7 @@ function Remove-Edge {
 
 }
 
+# Remove OneDrive
 function Remove-OneDrive {
     Write-Host "info:" -NoNewline -ForegroundColor Cyan; Write-Host "  Removing OneDrive"
 
@@ -1093,6 +1118,8 @@ function Remove-OneDrive {
     taskkill.exe /f /im "OneDrive.exe" | Out-Null
 
     try {
+
+        # Test if the path exist
         if (Test-Path "$env:systemroot\System32\OneDriveSetup.exe") {
             & "$env:systemroot\System32\OneDriveSetup.exe" /uninstall | Out-Null
         }
@@ -1132,19 +1159,25 @@ function Remove-OneDrive {
         Get-ScheduledTask -TaskPath '\' -TaskName 'OneDrive*' -ea SilentlyContinue | Unregister-ScheduledTask -Confirm:$false
         
     }
+
+    # Error handling
     catch {
         Write-Host "info:" -NoNewline -ForegroundColor Cyan; Write-Host "  OneDrive wasn't uninstalled succesfully" 
     }   
 }
 
+# Replace Windows default wallpapers
 function black-wallpapers {
     # Replace Windows default wallpapers with solid black
     try {
+        # Download the file and start the process
         Invoke-WebRequest -Uri "https://github.com/amitxv/win-wallpaper/releases/download/0.4.0/win-wallpaper.exe" -OutFile "C:\Windows\win-wallpaper.exe" | Out-Null
         Start-Process "cmd.exe" -ArgumentList "/c win-wallpaper --dir 'C:' --rgb #000000" -WindowStyle Minimized
 
         Write-Host "info:" -NoNewline -ForegroundColor Cyan; Write-Host "  Wallpapes were succesfully replaced with solid black images"
     }
+
+    # Error handling
     catch {
         Write-Host "error:" -NoNewline -ForegroundColor Red; Write-Host "  Wallpapers weren't replaced succesfully"
     }
@@ -1435,7 +1468,7 @@ function Main {
     
     # Remove edge
     if($RemoveEdge) {
-        Remove-Edge
+        Disable-Edge
     }
 
     if($RemoveOneDrive) {
@@ -1449,11 +1482,11 @@ function Main {
 
     Write-Host "info:" -NoNewline -ForegroundColor Cyan; Write-Host " Windows setup completed! Do you wish to optimize more? [y]/[n]"
 
-    $answer = Read-Host ">"
+    $input = Read-Host ">"
     Clear-Host
 
-    if($answer -eq "y" -or $answer -eq "Y" -or $answer -eq "n" -or $answer -eq "N") {
-        if($answer -eq "y" -or $answer -eq "Y") {
+    if($input -eq "y" -or $input -eq "Y" -or $input -eq "n" -or $input -eq "N") {
+        if($input -eq "y" -or $input -eq "Y") {
 
             Write-Host "info:" -NoNewline -ForegroundColor Cyan; Write-Host " Do you wish to configure settings? [y]/[n]"
             $settings = Read-Host ">"
