@@ -166,7 +166,7 @@ function menu {
         }
     } else {
         # Wrong input restarting
-        $host.UI.RawUI.WindowTitle = "error: Wrong input, restarting..."
+
         Write-Host "                    error:" -NoNewline -ForegroundColor Red; Write-Host "  Wrong input, restarting..."
         Start-Sleep -s 2
     }
@@ -178,21 +178,47 @@ function menu {
 
 # Ensure the C:\temp directory is cleaned up and recreated
 function Create-TempFolder{
-    if (Test-Path -Path $tempFile) {
-        Remove-Item -Path $tempFile -Force -Recurse -Confirm:$false | Out-Null
+    Write-Host "info:" -NoNewline -ForegroundColor Cyan; Write-Host "  Deleting old simple-install path if exists."
+
+    try {
+        if (Test-Path -Path $tempFile) {
+            Remove-Item -Path $tempFile -Force -Recurse -Confirm:$false | Out-Null
+            Write-Host "info:" -NoNewline -ForegroundColor Cyan; Write-Host "  Path deleted succesfully."
+        }
     }
+    catch {
+        Write-Host "error:" -NoNewline -ForegroundColor Red; Write-Host "  Path wasn't deleted succesfully."
+    }
+
+    Write-Host "info:" -NoNewline -ForegroundColor Cyan; Write-Host "  Creating new simple-install path."
     New-Item -Path $tempFile -ItemType Directory | Out-Null
+
+    if (Test-Path -Path $tempFile) {
+        Write-Host "info:" -NoNewline -ForegroundColor Cyan; Write-Host "  Path created succesfully."
+    } else {
+        Write-Host "error:" -NoNewline -ForegroundColor Red; Write-Host "  Path wasn't created succesfully."
+    }
+        
+    Write-Host "" # Create a space between categories
 
 }
 
 # Install Windows Updates
 function Install-WindowsUpdates {
-
-    # Get packages for Windows update
-    Install-PackageProvider -Name NuGet -Force | Out-Null
+    Write-Host "info:" -NoNewline -ForegroundColor Cyan; Write-Host "  Running Windows Update."
 
     try {
-        Write-Host "info:" -NoNewline -ForegroundColor Cyan; Write-Host "  Running Windows Update"
+        # Get packages for Windows update
+        Install-PackageProvider -Name NuGet -Force | Out-Null
+
+        Write-Host "info:" -NoNewline -ForegroundColor Cyan; Write-Host "  Packages for Windows update were downloaded succesfully."
+    }
+    catch {
+        Write-Host "error:" -NoNewline -ForegroundColor Red; Write-Host "  Packages for Windows update weren't downloaded succesfully."
+    }
+
+    Write-Host "info:" -NoNewline -ForegroundColor Cyan; Write-Host "  Attempt to update Windows."
+    try {
 	
         # Windows Update PS Module
         Install-Module -Name PSWindowsUpdate -Force | Out-Null
@@ -202,34 +228,57 @@ function Install-WindowsUpdates {
     
         # Do all upgrades
         Install-WindowsUpdate -MicrosoftUpdate -AcceptAll -Confirm -IgnoreReboot | Out-Null
+
+        Write-Host "info:" -NoNewline -ForegroundColor Cyan; Write-Host "  Was updated succesfully."
     }
     catch {
         # Attempt to catch an error (doesn't work :))
-        Write-Host "error:" -NoNewline -ForegroundColor Red; Write-Host "  Windows wasn't updated succesfully"
+        Write-Host "error:" -NoNewline -ForegroundColor Red; Write-Host "  Windows wasn't updated succesfully."
     }
+
+    Write-Host "" # Create a space between categories
 
 }
 
 # Install Windows Features (example: .NET Framework 3.5)
 function Windows-features {
     Write-Host "info:" -NoNewline -ForegroundColor Cyan; Write-Host "  Installing Windows features..."
-    Enable-WindowsOptionalFeature -Online -FeatureName NetFx3 -All | Out-Null
+
+    try {
+        Enable-WindowsOptionalFeature -Online -FeatureName NetFx3 -All | Out-Null
+        Write-Host "info:" -NoNewline -ForegroundColor Cyan; Write-Host "  Windows features succesfully downloaded."
+    }
+    catch {
+        Write-Host "error:" -NoNewline -ForegroundColor Red; Write-Host "  Windows features weren't succesfully downloaded."
+    }
+
+    Write-Host "" # Create a space between categories
+    
 }
 
 # Install Visual C++ Redistributable
 function Install-VisualCppRedistributable {
     Write-Host "info:" -NoNewline -ForegroundColor Cyan; Write-Host "  Installing Visual C++ Redistributable." 
     $url = "https://github.com/abbodi1406/vcredist/releases/download/v0.79.0/VisualCppRedist_AIO_x86_x64.exe"
-    
+
     # Use a predefined temporary directory path
     $fileName = "VisualCppRedist_AIO_x86_x64.exe"
     $path = Join-Path -Path $tempFile -ChildPath $fileName
 
-    # Add -UseBasicParsing to work on systems without IE or with IE not fully configured
-    Invoke-WebRequest -Uri $url -OutFile $path -UseBasicParsing | Out-Null
+    try {
+        # Add -UseBasicParsing to work on systems without IE or with IE not fully configured
+        Invoke-WebRequest -Uri $url -OutFile $path -UseBasicParsing | Out-Null
 
-    # Now that $path is correctly defined, Start-Process should work without issues
-    Start-Process -FilePath $path -ArgumentList "/ai /gm2" -Wait
+        # Now that $path is correctly defined, Start-Process should work without issues
+        Start-Process -FilePath $path -ArgumentList "/ai /gm2" -Wait
+
+        Write-Host "info:" -NoNewline -ForegroundColor Cyan; Write-Host "  Visual C++ Redistributables succesfully downloaded."
+    }
+    catch {
+        Write-Host "error:" -NoNewline -ForegroundColor Red; Write-Host "  Visual C++ Redistributables weren't downloaded succesfully."
+    }
+    
+    Write-Host "" # Create a space between categories
 }
 
 # Activate Windows
@@ -262,19 +311,20 @@ function Activate-Windows {
     Catch {
         Write-Host "error:" -NoNewline -ForegroundColor Red; Write-Host "  An error occurred while trying to download $fileName. $_"
     }
+
+    Write-Host "" # Create a space between categories
     
 }
 
 # Install scoop(package manager), apps
 function apps {
-
-    # Test if scoop is installed, if not install it
-    $scoopInstalled = Test-Path -Path "$env:USERPROFILE\scoop"
-    if ($scoopInstalled) {
-        # Scoop is installed
-        Write-Host "info:" -NoNewline -ForegroundColor Cyan; Write-Host "  Scoop is already installed."
+    try {
+        # Test if scoop is installed, if not install it
+        $scoopInstalled = Test-Path -Path "$env:USERPROFILE\scoop"
+        if ($scoopInstalled) {
+            # Scoop is installed
+            Write-Host "info:" -NoNewline -ForegroundColor Cyan; Write-Host "  Scoop is already installed."
     } else {
-
         # Scoop is not installed, install scoop
         Write-Host "info:" -NoNewline -ForegroundColor Cyan; Write-Host "  Scoop is not installed, installing now..."
     
@@ -288,16 +338,21 @@ function apps {
         if ($scoopInstalled) {
             Write-Host "info:" -NoNewline -ForegroundColor Cyan; Write-Host "  Scoop has been successfully installed."
         } else {
-            Write-Host "info:" -NoNewline -ForegroundColor Cyan; Write-Host "  Scoop installation failed."
-            # Exit the script if Scoop couldn't be installed
-            exit
+            Write-Host "error:" -NoNewline -ForegroundColor Red; Write-Host "  Scoop installation failed."
         }
+    }
+
+    }
+    catch {
+        Write-Host "error:" -NoNewline -ForegroundColor Red; Write-Host "  There was a problem with installing scoop."
     }
 
     # Install apps
     if ($scoopInstalled) {
         # Configure repositories
         scoop bucket add main
+
+        Clear-Host
 
         # Present a menu for selecting which development tools to install
         $toolsToInstall = @("git", "python", "nodejs", "mingw")
@@ -326,6 +381,8 @@ function apps {
     
         Write-Host "info:" -NoNewline -ForegroundColor Cyan; Write-Host "  Applications installation completed."
     }
+
+    Write-Host "" # Create a space between categories
 }
 
 # Install and configure 7-zip
@@ -464,13 +521,24 @@ function 7zip {
             }
         }
     
+        Write-Host "" # Create a space between categories
 }
 
 # Install firefox
 function firefox {
     Write-Host "info:" -NoNewline -ForegroundColor Cyan; Write-Host "  Installing firefox." 
     $scriptCommand = "irm https://raw.githubusercontent.com/amitxv/firefox/main/setup.ps1 | iex"
+    $path = "C:\Program Files\Mozilla Firefox"
+    
     Start-Process -FilePath "powershell.exe" -ArgumentList "-NoProfile", "-Command", $scriptCommand -Wait 
+
+    if(Test-path $path) {
+        Write-Host "info:" -NoNewline -ForegroundColor Cyan; Write-Host "  Firefox was installed succefully" 
+    } else {
+        Write-Host "error:" -NoNewline -ForegroundColor Red; Write-Host "  Firefox wasn't installed succefully" 
+    }
+
+    Write-Host "" # Create a space between categories
 }
 
 # Remove bloat apps
@@ -484,8 +552,9 @@ function Remove-Apps {
     # Delete apps that are in list
     foreach($App in $AppList) {
         Get-AppxPackage "*$App*" | Remove-AppxPackage -AllUsers -ErrorAction 'SilentlyContinue' | Out-Null
-        Write-Host "Removing: $App" 
+        Write-Host "info:" -NoNewline -ForegroundColor Cyan; Write-Host "  Removing: $App" 
     }
+    Write-Host "" # Create a space between categories
 }
 
 # Disable windows bloat services
@@ -499,18 +568,22 @@ function Remove-Apps {
     foreach ($service in $ServiceNames) {
         $serviceObj = Get-Service -Name $service -ErrorAction SilentlyContinue
         if ($serviceObj) {
-            Write-Host "info:" -NoNewline -ForegroundColor Cyan; Write-Host "  info: disabling service: $service"
+            Write-Host "info:" -NoNewline -ForegroundColor Cyan; Write-Host "  Disabling service: $service"
             Set-Service -Name $service -StartupType Disabled -ErrorAction SilentlyContinue
         } else {
             Write-Host "info:" -NoNewline -ForegroundColor Cyan; Write-Host "  Service $service not found."
         }
     }
 
-    Write-Host "All specified services have been set to disabled."
+    Write-Host "info:" -NoNewline -ForegroundColor Cyan; Write-Host "  All specified services have been set to disabled."
+
+    Write-Host "" # Create a space between categories
 }
 
 # Configure power settings
 function Power-Settings {
+    Write-Host "info:" -NoNewline -ForegroundColor Cyan; Write-Host "  Configuring Windows Power Settings." 
+
     # Set High Performance profile
     powercfg.exe /setactive 8c5e7fda-e8bf-4a96-9a85-a6e23a8c635c
     
@@ -530,6 +603,8 @@ function Power-Settings {
     powercfg.exe /hibernate off
 
     Write-Host "info:" -NoNewline -ForegroundColor Cyan; Write-Host "  Power settings has been configured." 
+
+    Write-Host "" # Create a space between categories
 }
 
 # Create settings.reg and apply it (
@@ -537,6 +612,7 @@ function Apply-RegistrySettings {
     param (
         [string]$RegFilePath
     )
+    Write-Host "info:" -NoNewline -ForegroundColor Cyan; Write-Host "  Configuring Windows settings via registry" 
 
     # Define the content of the .reg file
     $regFileContent = @"
@@ -1052,7 +1128,9 @@ Windows Registry Editor Version 5.00
     # Execute the .reg file silently
     Start-Process -FilePath "regedit.exe" -ArgumentList "/s `"$RegFilePath`"" -Wait -NoNewWindow
 
-    Write-Host "info:" -NoNewline -ForegroundColor Cyan; Write-Host "  Registry changes have been applied."
+    Write-Host "info:" -NoNewline -ForegroundColor Cyan; Write-Host "  Windows settings changes have been applied."
+
+    Write-Host "" # Create a space between categories
 }
 
 # Disable scheduled tasks
@@ -1067,7 +1145,7 @@ function Disable-ScheduledTasksByWildcard {
 
     foreach ($wildcard in $Wildcards) {
         # Filter tasks by wildcard pattern
-        $filteredTasks = $allTasks | Where-Object { $_.TaskName -like "*$wildcard*" }
+        $filteredTasks = $allTasks | Where-Object { $_.TaskName -like "*$wildcard*" } 2>$null | Out-Null
 
         if ($filteredTasks.Count -eq 0) {
             Write-Host "info:" -NoNewline -ForegroundColor Cyan; Write-Host "  No tasks match the pattern: $wildcard" #>
@@ -1077,7 +1155,7 @@ function Disable-ScheduledTasksByWildcard {
         foreach ($task in $filteredTasks) {
             # Disable each task
             try {
-                Disable-ScheduledTask -TaskName $task.TaskName -TaskPath $task.TaskPath -Confirm:$false
+                Disable-ScheduledTask -TaskName $task.TaskName -TaskPath $task.TaskPath -Confirm:$false 2>$null | Out-Null
                 Write-Host "info:" -NoNewline -ForegroundColor Cyan; Write-Host "  Successfully disabled task: $($task.TaskName)" #>
             } catch {
                 Write-Host "error:" -NoNewline -ForegroundColor Red; Write-Host "  Failed to disable task: $($task.TaskName). error:" -NoNewline -ForegroundColor Red; Write-Host "  $_" #>
@@ -1086,11 +1164,14 @@ function Disable-ScheduledTasksByWildcard {
     }
 
     Write-Host "info:" -NoNewline -ForegroundColor Cyan; Write-Host "  Scheduled tasks were succesfully disabled."
+
+    Write-Host "" # Create a space between categories
 }
 
 # Disable Edge
 function Disable-Edge {
-
+    Write-Host "info:" -NoNewline -ForegroundColor Cyan; Write-Host "  Disabling Microsoft Edge."
+    
     # Set edge path
     $edgeUpdatePath = "C:\Program Files (x86)\Microsoft\EdgeUpdate"
 
@@ -1108,14 +1189,15 @@ function Disable-Edge {
         Write-Host "info:" -NoNewline -ForegroundColor Cyan; Write-Host "  Deleted shortcut: $($_.FullName)"
     }
 
+    Write-Host "" # Create a space between categories
 }
 
 # Remove OneDrive
 function Remove-OneDrive {
-    Write-Host "info:" -NoNewline -ForegroundColor Cyan; Write-Host "  Removing OneDrive"
+    Write-Host "info:" -NoNewline -ForegroundColor Cyan; Write-Host "  Removing OneDrive."
 
     # Kill OneDrive process
-    taskkill.exe /f /im "OneDrive.exe" | Out-Null
+    taskkill.exe /f /im "OneDrive.exe" 2>$null | Out-Null
 
     try {
 
@@ -1158,29 +1240,35 @@ function Remove-OneDrive {
         # Removing scheduled task
         Get-ScheduledTask -TaskPath '\' -TaskName 'OneDrive*' -ea SilentlyContinue | Unregister-ScheduledTask -Confirm:$false
         
+        Write-Host "info:" -NoNewline -ForegroundColor Cyan; Write-Host "  OneDrive was uninstalled succesfully." 
     }
 
     # Error handling
     catch {
-        Write-Host "info:" -NoNewline -ForegroundColor Cyan; Write-Host "  OneDrive wasn't uninstalled succesfully" 
+        Write-Host "error:" -NoNewline -ForegroundColor Red; Write-Host "  OneDrive wasn't uninstalled succesfully." 
     }   
+
+    Write-Host "" # Create a space between categories
 }
 
 # Replace Windows default wallpapers
 function black-wallpapers {
     # Replace Windows default wallpapers with solid black
+    Write-Host "info:" -NoNewline -ForegroundColor Cyan; Write-Host "  Replacing Windows default wallpapers with solid black images."
     try {
         # Download the file and start the process
         Invoke-WebRequest -Uri "https://github.com/amitxv/win-wallpaper/releases/download/0.4.0/win-wallpaper.exe" -OutFile "C:\Windows\win-wallpaper.exe" | Out-Null
         Start-Process "cmd.exe" -ArgumentList "/c win-wallpaper --dir 'C:' --rgb #000000" -WindowStyle Minimized
 
-        Write-Host "info:" -NoNewline -ForegroundColor Cyan; Write-Host "  Wallpapes were succesfully replaced with solid black images"
+        Write-Host "info:" -NoNewline -ForegroundColor Cyan; Write-Host "  Wallpapes were succesfully replaced."
     }
 
     # Error handling
     catch {
-        Write-Host "error:" -NoNewline -ForegroundColor Red; Write-Host "  Wallpapers weren't replaced succesfully"
+        Write-Host "error:" -NoNewline -ForegroundColor Red; Write-Host "  Wallpapers weren't replaced succesfully."
     }
+
+    Write-Host "" # Create a space between categories
 
 }
 
@@ -1462,8 +1550,10 @@ function Main {
 
     # Disable memory compression
     if($MemoryCompression){
-        PowerShell -Command "Disable-MMAgent -MemoryCompression" | Out-Null
         Write-Host "info:" -NoNewline -ForegroundColor Cyan; Write-Host "  Disabling Memory Compression"
+        PowerShell -Command "Disable-MMAgent -MemoryCompression" | Out-Null
+        Write-Host "info:" -NoNewline -ForegroundColor Cyan; Write-Host "  Memory Compression disabled"
+        Write-Host "" # Create a space between categories
     }
     
     # Remove edge
