@@ -84,8 +84,7 @@ WindowsActivation=true  # This turns Windows activation on.
 <details> 
 <summary><h2>TODO</h2></summary>
 
-- Improve comments on program functionality
-- Enhance user feedback
+- Add categories
 
 </details>
 
