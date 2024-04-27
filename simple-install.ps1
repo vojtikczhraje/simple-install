@@ -178,6 +178,7 @@ function menu {
 
 # Ensure the C:\temp directory is cleaned up and recreated
 function Create-TempFolder{
+    Write-Host "category:" -NoNewline -ForegroundColor yellow; Write-Host "  Create Temp Folder"
     Write-Host "info:" -NoNewline -ForegroundColor Cyan; Write-Host "  Deleting old simple-install path if exists."
 
     try {
@@ -205,6 +206,8 @@ function Create-TempFolder{
 
 # Install Windows Updates
 function Install-WindowsUpdates {
+    Write-Host "category:" -NoNewline -ForegroundColor yellow; Write-Host "  Windows Update"
+
     Write-Host "info:" -NoNewline -ForegroundColor Cyan; Write-Host "  Running Windows Update."
 
     try {
@@ -242,6 +245,8 @@ function Install-WindowsUpdates {
 
 # Install Windows Features (example: .NET Framework 3.5)
 function Windows-features {
+    Write-Host "category:" -NoNewline -ForegroundColor yellow; Write-Host "  Windows Features"
+
     Write-Host "info:" -NoNewline -ForegroundColor Cyan; Write-Host "  Installing Windows features..."
 
     try {
@@ -258,6 +263,8 @@ function Windows-features {
 
 # Install Visual C++ Redistributable
 function Install-VisualCppRedistributable {
+    Write-Host "category:" -NoNewline -ForegroundColor yellow; Write-Host "  Install Visual C++ Redistributable"
+
     Write-Host "info:" -NoNewline -ForegroundColor Cyan; Write-Host "  Installing Visual C++ Redistributable." 
     $url = "https://github.com/abbodi1406/vcredist/releases/download/v0.79.0/VisualCppRedist_AIO_x86_x64.exe"
 
@@ -283,6 +290,8 @@ function Install-VisualCppRedistributable {
 
 # Activate Windows
 function Activate-Windows {
+    Write-Host "category:" -NoNewline -ForegroundColor yellow; Write-Host "  Activate Windows"
+
     Write-Host "info:" -NoNewline -ForegroundColor Cyan; Write-Host "  Activating windows." 
 
     # Create variables for further use
@@ -318,6 +327,8 @@ function Activate-Windows {
 
 # Install scoop(package manager), apps
 function apps {
+    Write-Host "category:" -NoNewline -ForegroundColor yellow; Write-Host "  Applications & Package manager"
+
     try {
         # Test if scoop is installed, if not install it
         $scoopInstalled = Test-Path -Path "$env:USERPROFILE\scoop"
@@ -387,6 +398,8 @@ function apps {
 
 # Install and configure 7-zip
 function 7zip {
+    Write-Host "category:" -NoNewline -ForegroundColor yellow; Write-Host "  7-zip"
+
     Invoke-Command -ScriptBlock {
         Write-Host "info:" -NoNewline -ForegroundColor Cyan; Write-Host "  Installing & configuring 7-zip"
 
@@ -526,6 +539,8 @@ function 7zip {
 
 # Install firefox
 function firefox {
+    Write-Host "category:" -NoNewline -ForegroundColor yellow; Write-Host "  Firefox"
+
     Write-Host "info:" -NoNewline -ForegroundColor Cyan; Write-Host "  Installing firefox." 
     $scriptCommand = "irm https://raw.githubusercontent.com/amitxv/firefox/main/setup.ps1 | iex"
     $path = "C:\Program Files\Mozilla Firefox"
@@ -547,6 +562,9 @@ function Remove-Apps {
         [string[]]$AppList
     )
 
+    Write-Host "category:" -NoNewline -ForegroundColor yellow; Write-Host "  Remove Applications"
+
+
     Write-Host "info:" -NoNewline -ForegroundColor Cyan; Write-Host "  Removing unwatend Apps"
 
     # Delete apps that are in list
@@ -563,6 +581,8 @@ function Remove-Apps {
         [Parameter(Mandatory = $true)]
         [string[]]$ServiceNames
     )
+
+    Write-Host "category:" -NoNewline -ForegroundColor yellow; Write-Host "  Disable services"
 
     # Disable services that are in list
     foreach ($service in $ServiceNames) {
@@ -582,6 +602,8 @@ function Remove-Apps {
 
 # Configure power settings
 function Power-Settings {
+    Write-Host "category:" -NoNewline -ForegroundColor yellow; Write-Host "  Power Settings"
+
     Write-Host "info:" -NoNewline -ForegroundColor Cyan; Write-Host "  Configuring Windows Power Settings." 
 
     # Set High Performance profile
@@ -609,6 +631,8 @@ function Power-Settings {
 
 # Create settings.reg and apply it (
 function Apply-RegistrySettings {
+    Write-Host "category:" -NoNewline -ForegroundColor yellow; Write-Host "  Windows Settings"
+
     param (
         [string]$RegFilePath
     )
@@ -1140,6 +1164,8 @@ function Disable-ScheduledTasksByWildcard {
         [string[]]$Wildcards
     )
 
+    Write-Host "category:" -NoNewline -ForegroundColor yellow; Write-Host "  Disable Scheduled Tasks"
+
     # Retrieve all scheduled tasks
     $allTasks = Get-ScheduledTask
 
@@ -1170,6 +1196,8 @@ function Disable-ScheduledTasksByWildcard {
 
 # Disable Edge
 function Disable-Edge {
+    Write-Host "category:" -NoNewline -ForegroundColor yellow; Write-Host "  Disable Edge"
+
     Write-Host "info:" -NoNewline -ForegroundColor Cyan; Write-Host "  Disabling Microsoft Edge."
     
     # Set edge path
@@ -1194,6 +1222,8 @@ function Disable-Edge {
 
 # Remove OneDrive
 function Remove-OneDrive {
+    Write-Host "category:" -NoNewline -ForegroundColor yellow; Write-Host "  Remove OneDrive"
+
     Write-Host "info:" -NoNewline -ForegroundColor Cyan; Write-Host "  Removing OneDrive."
 
     # Kill OneDrive process
@@ -1253,6 +1283,8 @@ function Remove-OneDrive {
 
 # Replace Windows default wallpapers
 function black-wallpapers {
+    Write-Host "category:" -NoNewline -ForegroundColor yellow; Write-Host "  Black wallpapers"
+
     # Replace Windows default wallpapers with solid black
     Write-Host "info:" -NoNewline -ForegroundColor Cyan; Write-Host "  Replacing Windows default wallpapers with solid black images."
     try {
@@ -1550,6 +1582,7 @@ function Main {
 
     # Disable memory compression
     if($MemoryCompression){
+        Write-Host "category:" -NoNewline -ForegroundColor yellow; Write-Host "  Memory Compression"
         Write-Host "info:" -NoNewline -ForegroundColor Cyan; Write-Host "  Disabling Memory Compression"
         PowerShell -Command "Disable-MMAgent -MemoryCompression" | Out-Null
         Write-Host "info:" -NoNewline -ForegroundColor Cyan; Write-Host "  Memory Compression disabled"
