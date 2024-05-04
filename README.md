@@ -84,7 +84,7 @@ WindowsActivation=true  # This turns Windows activation on.
 <details> 
 <summary><h2>TODO</h2></summary>
 
-- Add categories
+- Replace task manager with process explorer
 - Fix adding 7-zip to context menu & Make it via powershell and not .reg
 
 </details>
