@@ -16,6 +16,7 @@ param (
     [switch]$RemoveOneDrive = $true,
     [switch]$ReplaceWallpapers = $true,
     [switch]$7zip = $true,
+    [switch]$ReplaceTaskManager = $true,
     [string]$tempFile = "C:\temp",
     [string]$configFile = "C:\config.ini"
 )
@@ -65,6 +66,7 @@ foreach ($setting in $configSettings.GetEnumerator()) {
         "RemoveOneDrive" { $RemoveOneDrive = [convert]::ToBoolean($setting.Value) } 
         "ReplaceWallpapers" { $ReplaceWallpapers = [convert]::ToBoolean($setting.Value) }   
         "7zip" { $7zip = [convert]::ToBoolean($setting.Value) }   
+        "ReplaceTaskManager" { $ReplaceTaskManager = [convert]::ToBoolean($setting.Value) }   
         default { Write-Host "Unknown setting: $($_)" }
     }
 }
@@ -111,6 +113,7 @@ function menu {
             "RemoveOneDrive" { $RemoveOneDrive = [convert]::ToBoolean($setting.Value) } 
             "ReplaceWallpapers" { $ReplaceWallpapers = [convert]::ToBoolean($setting.Value) }   
             "7zip" { $7zip = [convert]::ToBoolean($setting.Value) }   
+            "ReplaceTaskManager" { $ReplaceTaskManager = [convert]::ToBoolean($setting.Value) }   
             default { Write-Host "Unknown setting: $($_)" }
         }
     }
@@ -126,8 +129,8 @@ function menu {
     Write-Host "                              |    Install Applications = " -NoNewline; Write-Host $InstallApplications -ForegroundColor $(if ($InstallApplications) {'Green'} else {'Red'})
     Write-Host "                              |    Install & configure 7-zip  = " -NoNewline; Write-Host $7zip -ForegroundColor $(if ($7zip) {'Green'} else {'Red'})
     Write-Host "                              |    Install Firefox = " -NoNewline; Write-Host $InstallFirefox -ForegroundColor $(if ($InstallFirefox) {'Green'} else {'Red'})
-    Write-Host "          simple-install      |    Remove Bloat Applications = " -NoNewline; Write-Host $RemoveBloatApplications -ForegroundColor $(if ($RemoveBloatApplications) {'Green'} else {'Red'})
-    Write-Host "                              |    Disable Services = " -NoNewline; Write-Host $DisableServices -ForegroundColor $(if ($DisableServices) {'Green'} else {'Red'})
+    Write-Host "                              |    Remove Bloat Applications = " -NoNewline; Write-Host $RemoveBloatApplications -ForegroundColor $(if ($RemoveBloatApplications) {'Green'} else {'Red'})
+    Write-Host "          simple-install      |    Disable Services = " -NoNewline; Write-Host $DisableServices -ForegroundColor $(if ($DisableServices) {'Green'} else {'Red'})
     Write-Host "                              |    Power Settings = " -NoNewline; Write-Host $PowerSettings -ForegroundColor $(if ($PowerSettings) {'Green'} else {'Red'})
     Write-Host "                              |    Registry Settings = " -NoNewline; Write-Host $RegistrySettings -ForegroundColor $(if ($RegistrySettings) {'Green'} else {'Red'})
     Write-Host "                              |    Disable Scheduled Tasks = " -NoNewline; Write-Host $DisableScheduledTasks -ForegroundColor $(if ($DisableScheduledTasks) {'Green'} else {'Red'})
@@ -135,6 +138,7 @@ function menu {
     Write-Host "                              |    Remove Edge = " -NoNewline; Write-Host $RemoveEdge -ForegroundColor $(if ($RemoveEdge) {'Green'} else {'Red'})
     Write-Host "                              |    Remove OneDrive = " -NoNewline; Write-Host $RemoveOneDrive -ForegroundColor $(if ($RemoveOneDrive) {'Green'} else {'Red'})
     Write-Host "                              |    Replace Wallpapers = " -NoNewline; Write-Host $ReplaceWallpapers -ForegroundColor $(if ($ReplaceWallpapers) {'Green'} else {'Red'})
+    Write-Host "                              |    Replace Task Manager = " -NoNewline; Write-Host $ReplaceTaskManager -ForegroundColor $(if ($ReplaceTaskManager) {'Green'} else {'Red'})
     Write-Host ""
     Write-Host ""
 
@@ -1304,6 +1308,45 @@ function black-wallpapers {
 
 }
 
+function Replace-TaskManager {
+
+    Write-Host "category:" -NoNewline -ForegroundColor yellow; Write-Host "  Replace Task Manager"
+    # If path already exists remove them
+    if ((Test-Path -Path "C:\temp\ProcessExplorer") -or (Test-Path -Path "C:\temp\ProcessExplorer.zip") -or (Test-Path -Path "C:\Windows\procexp.exe")) {
+        Write-Host "info:" -NoNewline -ForegroundColor Cyan; Write-Host "  Removing already created folders and files."
+        Remove-Item -LiteralPath "C:\temp\ProcessExplorer" -Force -Recurse 2>&1 | Out-Null
+        Remove-Item -LiteralPath "C:\temp\ProcessExplorer.zip" -Force -Recurse 2>&1 | Out-Null
+        Remove-Item -LiteralPath "C:\Windows\procexp.exe" -Force -Recurse 2>&1 | Out-Null
+    }
+
+    Write-Host "info:" -NoNewline -ForegroundColor Cyan; Write-Host "  Download and extract Process Explorer."
+    # Define the URL for downloading Process Explorer
+    $url = "https://download.sysinternals.com/files/ProcessExplorer.zip"
+    # Specify the path where the ZIP file will be saved
+    $destination = "C:\temp\ProcessExplorer.zip"
+
+    # Download the file
+    Invoke-WebRequest -Uri $url -OutFile $destination
+
+    # Specify the path where to extract the contents
+    $extractPath = "C:\temp\ProcessExplorer"
+
+    # Extract the ZIP file
+    Expand-Archive -LiteralPath $destination -DestinationPath $extractPath -Force
+
+    # Move the it to right directory
+    Move-Item "C:\temp\ProcessExplorer\procexp64.exe" "C:\Windows\procexp.exe"
+
+    # Path to Process Explorer
+    $procExpPath = "C:\Windows\procexp.exe"
+
+    Write-Host "info:" -NoNewline -ForegroundColor Cyan; Write-Host "  Replace Task Manager with Process Explorer"
+    # Add registry key to override default task manager
+    Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options\taskmgr.exe" -Name "Debugger" -Value "`"$procExpPath`""
+
+    Write-Host "" # Create a space between categories
+}
+
 # All functions are ran in main function 
 function Main {
     # Admin check
@@ -1602,6 +1645,9 @@ function Main {
         black-wallpapers
     }
 
+    if($ReplaceTaskManager) {
+        Replace-TaskManager
+    }
 
     Write-Host "info:" -NoNewline -ForegroundColor Cyan; Write-Host " Windows setup completed! Do you wish to optimize more? [y]/[n]"
 
