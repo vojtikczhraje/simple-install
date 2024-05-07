@@ -31,7 +31,7 @@ irm "https://raw.githubusercontent.com/vojtikczhraje/simple-install/main/simple-
 ### How to update settings in the table ^
 - Paste command below to PowerShell:
 ```powershell
-irm "https://raw.githubusercontent.com/vojtikczhraje/simple-install/main/config.ini" -OutFile "C:\config.ini"; C:\config.ini
+irm "https://raw.githubusercontent.com/vojtikczhraje/simple-install/main/config.ini" -OutFile "C:\temp\config.ini"; C:\temp\config.ini
 ```
 
 - Change the values to `true` for enabling option or `false` for disabling option.
