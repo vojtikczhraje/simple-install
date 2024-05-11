@@ -84,7 +84,7 @@ WindowsActivation=true  # This turns Windows activation on.
 <details> 
 <summary><h2>TODO</h2></summary>
 
-- Fix adding 7-zip to context menu & Make it via powershell and not .reg
+- Add 7-zip to context menu via powershell and not .reg and in SAME FUNCTION
 
 </details>
 
