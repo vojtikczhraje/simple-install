@@ -1,3 +1,5 @@
+# Competely broken needs to be re-done
+
 # simple-install
 - PowerShell script that makes setup of Windows easier.
 
