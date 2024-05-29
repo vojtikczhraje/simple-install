@@ -15,6 +15,7 @@ function TempFolder {
 
 # Function to activate Windows
 function Activate-Windows {
+
     # Create variables for further use
     $URL = "https://raw.githubusercontent.com/vojtikczhraje/simple-install/main/assets/Win-Activation.cmd"
     $FileName = "Win-Activation.cmd"
@@ -32,9 +33,9 @@ function Activate-Windows {
 
 # Function to install Visual C++ Redistributables
 function Install-VisualCppRedistributables {
-    $URL = "https://github.com/abbodi1406/vcredist/releases/download/v0.79.0/VisualCppRedist_AIO_x86_x64.exe"
 
-    # Use a predefined temporary directory Path
+    # Create variables for further use
+    $URL = "https://github.com/abbodi1406/vcredist/releases/download/v0.79.0/VisualCppRedist_AIO_x86_x64.exe"
     $FileName = "VisualCppRedist_AIO_x86_x64.exe"
     $Path = Join-Path -Path $tempFile -ChildPath $FileName
 
@@ -43,18 +44,31 @@ function Install-VisualCppRedistributables {
 
     # Now that $Path is correctly defined, Start-Process should work without issues
     Start-Process -FilePath $Path -ArgumentList "/ai /gm2" -Wait
+
+    Write-Output "Visual C++ Redistributable was installed succesfuly"
 }
 
 # Function to install Firefox
 function Install-Firefox {
+
+    # Create variables for further use
     $URL = "irm https://raw.githubusercontent.com/vojtikczhraje/simple-install/main/assets/Firefox.ps1 | iex"
-    
+    $Path = "C:\Program Files\Mozilla Firefox"
+
     # Install Firefox
     Start-Process -FilePath "powershell.exe" -ArgumentList "-NoProfile", "-Command", $URL -Wait 
+
+    if(Test-path $Path) {
+        Write-Output "Firefox was installed succefully." 
+    } else {
+        Write-Output "Firefox wasn't installed succefully." 
+    }
 }
 
 # Function to remove bloatware
 function Remove-Bloatware {
+
+    # Create variables for further use
         $Bloatware = @(
 
         #Unnecessary Windows 10 AppX Apps
@@ -124,6 +138,7 @@ function Remove-Bloatware {
     )
 
     $Services = @(
+
             'DiagTrack',
             'DialogBlockingService',
             'MsKeyboardFilter',
@@ -174,6 +189,7 @@ function Remove-Bloatware {
 
 # Function to configure power settings
 function Configure-PowerSettings {
+
         # Set High Performance profile
         powercfg.exe /setactive 8c5e7fda-e8bf-4a96-9a85-a6e23a8c635c
     
@@ -197,6 +213,7 @@ function Configure-PowerSettings {
 
 # Function to disable scheduled Tasks
 function Disable-ScheduledTasks {
+
         $Tasks = @(
         # Windows base scheduled Tasks
         "\Microsoft\Windows\.NET Framework\.NET Framework NGEN v4.0.30319"
@@ -400,23 +417,25 @@ function Disable-ScheduledTasks {
         $Path = $Parts[0..($Parts.length-2)] -join '\'
 
         Disable-ScheduledTask -TaskName "$Name" -TaskPath "$Path" -ErrorAction SilentlyContinue
+
+        Write-Output "Trying to disable $Task."
     }
+
 }
 
 # Function to replace wallpapers
 function Replace-Wallpapers {
-    # Add your wallpaper replacement logic here
+
+    $URL = "https://github.com/vojtikczhraje/simple-install/blob/main/assets/Win-Wallpaper.exe"
+
+    # Download the file and start the process
+    Invoke-WebRequest -Uri $URL -OutFile "C:\Windows\win-wallpaper.exe" | Out-Null
+    Start-Process "cmd.exe" -ArgumentList "/c win-wallpaper --dir 'C:' --rgb #000000" -WindowStyle Minimized
+
+    Write-Output "Trying to replace Windows Default wallpapers."
+
 }
 
-# Function to install essential software
-function Install-EssentialSoftware {
-    # Add your software installation logic here
-}
-
-# Function to perform system updates
-function Perform-SystemUpdates {
-    # Add your update logic here
-}
 
 # Call functions as per your setup requirements
 Activate-Windows
@@ -426,7 +445,5 @@ Remove-Bloatware
 Configure-PowerSettings
 Disable-ScheduledTasks
 Replace-Wallpapers
-Install-EssentialSoftware
-Perform-SystemUpdates
 
 # Add more function calls as needed
