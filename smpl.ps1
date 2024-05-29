@@ -1,5 +1,5 @@
 param (
-    $tempFolder = "$env:TEMP\Temp"
+    [string]$tempFolder = "$env:TEMP\smpl"
 )
 
 
@@ -37,7 +37,7 @@ function Install-VisualCppRedistributables {
     # Create variables for further use
     $URL = "https://github.com/abbodi1406/vcredist/releases/download/v0.79.0/VisualCppRedist_AIO_x86_x64.exe"
     $FileName = "VisualCppRedist_AIO_x86_x64.exe"
-    $Path = Join-Path -Path $tempFile -ChildPath $FileName
+    $Path = Join-Path -Path $tempFolder -ChildPath $FileName
 
     # Add -UseBasicParsing to work on systems without IE or with IE not fully configured
     Invoke-WebRequest -Uri $URL -OutFile $Path -UseBasicParsing 2>&1 | Out-Null
@@ -426,7 +426,7 @@ function Disable-ScheduledTasks {
 # Function to replace wallpapers
 function Replace-Wallpapers {
 
-    $URL = "https://github.com/vojtikczhraje/simple-install/blob/main/assets/Win-Wallpaper.exe"
+    $URL = "https://raw.githubusercontent.com/vojtikczhraje/simple-install/main/assets/Win-Wallpaper.exe"
 
     # Download the file and start the process
     Invoke-WebRequest -Uri $URL -OutFile "C:\Windows\win-wallpaper.exe" | Out-Null
@@ -438,6 +438,7 @@ function Replace-Wallpapers {
 
 
 # Call functions as per your setup requirements
+TempFolder
 Activate-Windows
 Install-VisualCppRedistributables
 Install-Firefox
