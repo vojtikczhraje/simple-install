@@ -458,401 +458,360 @@ function Replace-Wallpapers {
 
 function Tweaks {
     # Disable " - Shortcut" text for created shortcuts
-    Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\NamingTemplates" -Name "ShortcutNameTemplate" -Value "%s.lnk" -Type String -Force
+    Reg.exe Add "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\NamingTemplates" /v "ShortcutNameTemplate" /t REG_SZ /d '\"%s.lnk\"' /f > $null 2>&1
 
-    # Disable Cortana and associated features
-    $cortanaPaths = @(
-        "HKLM:\SOFTWARE\Policies\Microsoft\Windows\Windows Search",
-        "HKLM:\SOFTWARE\Microsoft\PolicyManager\current\device\Experience",
-        "HKCU:\Software\Microsoft\Windows\CurrentVersion\Search"
-    )
-    foreach ($path in $cortanaPaths) {
-        Set-ItemProperty -Path $path -Name "AllowCortana" -Value 0 -Type DWord -Force
-        Set-ItemProperty -Path $path -Name "DisableWebSearch" -Value 1 -Type DWord -Force
-        Set-ItemProperty -Path $path -Name "ConnectedSearchUseWeb" -Value 0 -Type DWord -Force
-        Set-ItemProperty -Path $path -Name "ConnectedSearchUseWebOverMeteredConnections" -Value 0 -Type DWord -Force
-        Set-ItemProperty -Path $path -Name "AllowCloudSearch" -Value 0 -Type DWord -Force
-        Set-ItemProperty -Path $path -Name "HistoryViewEnabled" -Value 0 -Type DWord -Force
-        Set-ItemProperty -Path $path -Name "DeviceHistoryEnabled" -Value 0 -Type DWord -Force
-        Set-ItemProperty -Path $path -Name "AllowSearchToUseLocation" -Value 0 -Type DWord -Force
-        Set-ItemProperty -Path $path -Name "BingSearchEnabled" -Value 0 -Type DWord -Force
-        Set-ItemProperty -Path $path -Name "CortanaConsent" -Value 0 -Type DWord -Force
-    }
+    # Disable Cortana
+    Reg.exe Add "HKLM\SOFTWARE\Policies\Microsoft\Windows\Windows Search" /v "AllowCortana" /t REG_DWORD /d "0" /f > $null 2>&1
+    Reg.exe Add "HKLM\SOFTWARE\Policies\Microsoft\Windows\Windows Search" /v "DisableWebSearch" /t REG_DWORD /d "1" /f > $null 2>&1
+    Reg.exe Add "HKLM\SOFTWARE\Policies\Microsoft\Windows\Windows Search" /v "ConnectedSearchUseWeb" /t REG_DWORD /d "0" /f > $null 2>&1
+    Reg.exe Add "HKLM\SOFTWARE\Policies\Microsoft\Windows\Windows Search" /v "ConnectedSearchUseWebOverMeteredConnections" /t REG_DWORD /d "0" /f > $null 2>&1
+    Reg.exe Add "HKLM\SOFTWARE\Policies\Microsoft\Windows\Windows Search" /v "AllowCloudSearch" /t REG_DWORD /d "0" /f > $null 2>&1
+    Reg.exe Add "HKLM\SOFTWARE\Microsoft\PolicyManager\current\device\Experience" /v "AllowCortana" /t REG_DWORD /d "0" /f > $null 2>&1
+    Reg.exe Add "HKCU\Software\Microsoft\Windows\CurrentVersion\Search" /v "HistoryViewEnabled" /t REG_DWORD /d "0" /f > $null 2>&1
+    Reg.exe Add "HKCU\Software\Microsoft\Windows\CurrentVersion\Search" /v "DeviceHistoryEnabled" /t REG_DWORD /d "0" /f > $null 2>&1
+    Reg.exe Add "HKCU\Software\Microsoft\Windows\CurrentVersion\Search" /v "AllowSearchToUseLocation" /t REG_DWORD /d "0" /f > $null 2>&1
+    Reg.exe Add "HKCU\Software\Microsoft\Windows\CurrentVersion\Search" /v "BingSearchEnabled" /t REG_DWORD /d "0" /f > $null 2>&1
+    Reg.exe Add "HKCU\Software\Microsoft\Windows\CurrentVersion\Search" /v "CortanaConsent" /t REG_DWORD /d "0" /f > $null 2>&1
+    Reg.exe Add "HKLM\SOFTWARE\Policies\Microsoft\Windows\Windows Search" /v "AllowSearchToUseLocation" /t REG_DWORD /d "0" /f > $null 2>&1
 
     # Disable Paging files
-    Set-ItemProperty -Path "HKLM:\System\CurrentControlSet\Control\Session Manager\Memory Management" -Name "PagingFiles" -Value "" -Type MultiString -Force
-    Set-ItemProperty -Path "HKLM:\System\CurrentControlSet\Control\Session Manager\Memory Management" -Name "ClearPageFileAtShutdown" -Value 0 -Type DWord -Force
-    Set-ItemProperty -Path "HKLM:\System\CurrentControlSet\Control\Session Manager\Memory Management" -Name "LargeSystemCache" -Value 0 -Type DWord -Force
+    Reg.exe --% Add "HKLM\System\CurrentControlSet\Control\Session Manager\Memory Management" /v "PagingFiles" /t REG_MULTI_SZ /d "" /f | Out-Null
+    Reg.exe Add "HKLM\System\CurrentControlSet\Control\Session Manager\Memory Management" /v "ClearPageFileAtShutdown" /t REG_DWORD /d "0" /f > $null 2>&1
+    Reg.exe Add "HKLM\System\CurrentControlSet\Control\Session Manager\Memory Management" /v "LargeSystemCache" /t REG_DWORD /d "0" /f > $null 2>&1
 
-    # Power saving features for USB devices using PowerShell
+    # Disable Power Saving features
     Get-WmiObject -Class Win32_PnPEntity | Where-Object { $_.DeviceID -like "USB\VID_*" } | ForEach-Object {
-        $Path = "HKLM:\System\CurrentControlSet\Enum\$($_.DeviceID)\Device Parameters"
-        Set-ItemProperty -Path $Path -Name "EnhancedPowerManagementEnabled" -Value 0 -Type DWord -Force
-        Set-ItemProperty -Path $Path -Name "AllowIdleIrpInD3" -Value 0 -Type DWord -Force
-        Set-ItemProperty -Path $Path -Name "EnableSelectiveSuspend" -Value 0 -Type DWord -Force
-        Set-ItemProperty -Path $Path -Name "DeviceSelectiveSuspended" -Value 0 -Type DWord -Force
-        Set-ItemProperty -Path $Path -Name "SelectiveSuspendEnabled" -Value 0 -Type DWord -Force
+    $Path = "HKLM:\System\CurrentControlSet\Enum\$($_.DeviceID)\Device Parameters"
+    Reg.exe Add "$Path" /v "EnhancedPowerManagementEnabled" /t REG_DWORD /d "0" /f > $null 2>&1
+    Reg.exe Add "$Path" /v "AllowIdleIrpInD3" /t REG_DWORD /d "0" /f > $null 2>&1
+    Reg.exe Add "$Path" /v "EnableSelectiveSuspend" /t REG_DWORD /d "0" /f > $null 2>&1
+    Reg.exe Add "$Path" /v "DeviceSelectiveSuspended" /t REG_DWORD /d "0" /f > $null 2>&1
+    Reg.exe Add "$Path" /v "SelectiveSuspendEnabled" /t REG_DWORD /d "0" /f > $null 2>&1
+    }
+
+    Get-ChildItem -Path "HKLM:\System\CurrentControlSet\Enum" -Recurse -ErrorAction SilentlyContinue | Where-Object { $_.Property -contains "IdleInWorkingState" } | ForEach-Object { 
+        Reg.exe Add "$_.PSPath" /v "IdleInWorkingState" /t REG_DWORD /d "0" /f > $null 2>&1
+    }
+
+    Get-ChildItem -Path "HKLM:\System\CurrentControlSet\Enum" -Recurse -ErrorAction SilentlyContinue | Where-Object { $_.Property -contains "D3ColdSupported" } | ForEach-Object { 
+        Reg.exe Add "$_.PSPath" /v "D3ColdSupported" /t REG_DWORD /d "0" /f > $null 2>&1
+    }	
+
+    Get-ChildItem -Path "HKLM:\System\CurrentControlSet\Enum" -Recurse -ErrorAction SilentlyContinue | Where-Object { $_.Property -contains "EnableIdlePowerManagement" } | ForEach-Object { 
+        Reg.exe Add "$_.PSPath" /v "EnableIdlePowerManagement" /t REG_DWORD /d "0" /f > $null 2>&1
+    }
+
+    Get-ChildItem -Path "HKLM:\System\CurrentControlSet\Enum" -Recurse -ErrorAction SilentlyContinue | Where-Object { $_.Property -contains "RemoteWakeEnabled" } | ForEach-Object { 
+        Reg.exe Add "$_.PSPath" /v "RemoteWakeEnabled" /t REG_DWORD /d "0" /f > $null 2>&1
     }
 
     # Disable Sticky Keys
-    $stickyKeysPaths = @(
-        "HKCU:\Control Panel\Accessibility\StickyKeys",
-        "HKCU:\Control Panel\Accessibility\Keyboard Response",
-        "HKCU:\Control Panel\Accessibility\ToggleKeys",
-        "HKEY_USERS:\.DEFAULT\Control Panel\Accessibility\StickyKeys",
-        "HKEY_USERS:\.DEFAULT\Control Panel\Accessibility\Keyboard Response",
-        "HKEY_USERS:\.DEFAULT\Control Panel\Accessibility\ToggleKeys"
-    )
-    foreach ($path in $stickyKeysPaths) {
-        Set-ItemProperty -Path $path -Name "Flags" -Value "506" -Type String -Force
-    }
+    Reg.exe Add  "HKCU\Control Panel\Accessibility\StickyKeys" /v "Flags" /d "506" /f > $null 2>&1
+    Reg.exe Add  "HKCU\Control Panel\Accessibility\Keyboard Response" /v "Flags" /d "122" /f > $null 2>&1
+    Reg.exe Add  "HKCU\Control Panel\Accessibility\ToggleKeys" /v "Flags" /d "58" /f > $null 2>&1
+    Reg.exe Add  "HKEY_USERS\.DEFAULT\Control Panel\Accessibility\StickyKeys" /v "Flags" /d "506" /f > $null 2>&1
+    Reg.exe Add  "HKEY_USERS\.DEFAULT\Control Panel\Accessibility\Keyboard Response" /v "Flags" /d "122" /f > $null 2>&1
+    Reg.exe Add  "HKEY_USERS\.DEFAULT\Control Panel\Accessibility\ToggleKeys" /v "Flags" /d "58" /f > $null 2>&1
 
     # Disable Superfetch
-    Set-ItemProperty -Path "HKLM:\System\CurrentControlSet\Control\Session Manager\Memory Management\PrefetchParameters" -Name "EnableSuperfetch" -Value 0 -Type DWord -Force
-    Set-ItemProperty -Path "HKLM:\System\CurrentControlSet\Control\Session Manager\Memory Management\PrefetchParameters" -Name "SfTracingState" -Value 0 -Type DWord -Force
-    Set-ItemProperty -Path "HKLM:\System\CurrentControlSet\Control\Session Manager\Memory Management\PrefetchParameters" -Name "EnablePrefetcher" -Value 0 -Type DWord -Force
+    Reg.exe Add "HKLM\System\CurrentControlSet\Control\Session Manager\Memory Management\PrefetchParameters" /v "EnableSuperfetch" /t REG_DWORD /d "0" /f > $null 2>&1
+    Reg.exe Add "HKLM\SYSTEM\CurrentControlSet\Control\Session Manager\Memory Management\PrefetchParameters" /v "SfTracingState" /t REG_DWORD /d "0" /f > $null 2>&1
+    Reg.exe Add "HKLM\System\CurrentControlSet\Control\Session Manager\Memory Management\PrefetchParameters" /v "EnablePrefetcher" /t REG_DWORD /d "0" /f > $null 2>&1
 
-    # Taskbar/Start Menu Tracking & Telemetry
-    Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name "TaskbarDa" -Value 0 -Type DWord -Force
-    Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name "TaskbarMn" -Value 0 -Type DWord -Force
-    Remove-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\PolicyManager\current\device\Stickers" -Name "EnableStickers" -Force
-    Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\UserProfileEngagement" -Name "ScoobeSystemSettingEnabled" -Value 0 -Type DWord -Force
-    Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" -Name "ContentDeliveryAllowed" -Value 0 -Type DWord -Force
-    Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" -Name "PreInstalledAppsEverEnabled" -Value 0 -Type DWord -Force
-    Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" -Name "SilentInstalledAppsEnabled" -Value 0 -Type DWord -Force
-    Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" -Name "SubscribedContent-314559Enabled" -Value 0 -Type DWord -Force
-    Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" -Name "SubscribedContent-338387Enabled" -Value 0 -Type DWord -Force
-    Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" -Name "SubscribedContent-338389Enabled" -Value 0 -Type DWord -Force
-    Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" -Name "SystemPaneSuggestionsEnabled" -Value 0 -Type DWord -Force
-    Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" -Name "SystemPaneSuggestionsEnabled" -Value 0 -Type DWord -Force
-    Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" -Name "SubscribedContent-338393Enabled" -Value 0 -Type DWord -Force
-    Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" -Name "SubscribedContent-353694Enabled" -Value 0 -Type DWord -Force
-    Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" -Name "SubscribedContent-353696Enabled" -Value 0 -Type DWord -Force
-    Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" -Name "SubscribedContent-310093Enabled" -Value 0 -Type DWord -Force
-    Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" -Name "SubscribedContent-338388Enabled" -Value 0 -Type DWord -Force
-    Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" -Name "SubscribedContentEnabled" -Value 0 -Type DWord -Force
-    Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" -Name "SoftLandingEnabled" -Value 0 -Type DWord -Force
-    Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" -Name "FeatureManagementEnabled" -Value 0 -Type DWord -Force
-    Set-ItemProperty -Path "HKCU:\Software\Policies\Microsoft\Windows\Explorer" -Name "DisableSearchBoxSuggestions" -Value 1 -Type DWord -Force
-    Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer" -Name "AllowOnlineTips" -Value 0 -Type DWord -Force
+    # Disable Taskbar/Start Menu Tracking & Telemetry
+    Reg.exe Add "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" /v "TaskbarDa" /t REG_DWORD /d "0" /f > $null 2>&1
+    Reg.exe Add "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" /v "TaskbarMn" /t REG_DWORD /d "0" /f > $null 2>&1
+    Reg.exe Delete "HKLM\SOFTWARE\Microsoft\PolicyManager\current\device\Stickers" /v "EnableStickers" /f > $null 2>&1
+    Reg.exe Add "HKCU\Software\Microsoft\Windows\CurrentVersion\UserProfileEngagement" /v "ScoobeSystemSettingEnabled" /t REG_DWORD /d "0" /f > $null 2>&1
+    Reg.exe Add "HKCU\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" /v "ContentDeliveryAllowed" /t REG_DWORD /d "0" /f > $null 2>&1
+    Reg.exe Add "HKCU\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" /v "PreInstalledAppsEverEnabled" /t REG_DWORD /d "0" /f > $null 2>&1
+    Reg.exe Add "HKCU\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" /v "SilentInstalledAppsEnabled" /t REG_DWORD /d "0" /f > $null 2>&1
+    Reg.exe Add "HKCU\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" /v "SubscribedContent-314559Enabled" /t REG_DWORD /d "0" /f > $null 2>&1
+    Reg.exe Add "HKCU\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" /v "SubscribedContent-338387Enabled" /t REG_DWORD /d "0" /f > $null 2>&1
+    Reg.exe Add "HKCU\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" /v "SubscribedContent-338389Enabled" /t REG_DWORD /d "0" /f > $null 2>&1
+    Reg.exe Add "HKCU\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" /v "SystemPaneSuggestionsEnabled" /t REG_DWORD /d "0" /f > $null 2>&1
+    Reg.exe Add "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" /v "SystemPaneSuggestionsEnabled" /t REG_DWORD /d "0" /f > $null 2>&1
+    Reg.exe Add "HKCU\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" /v "SubscribedContent-338393Enabled" /t REG_DWORD /d "0" /f > $null 2>&1
+    Reg.exe Add "HKCU\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" /v "SubscribedContent-353694Enabled" /t REG_DWORD /d "0" /f > $null 2>&1
+    Reg.exe Add "HKCU\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" /v "SubscribedContent-353696Enabled" /t REG_DWORD /d "0" /f > $null 2>&1
+    Reg.exe Add "HKCU\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" /v "SubscribedContent-310093Enabled" /t REG_DWORD /d "0" /f > $null 2>&1
+    Reg.exe Add "HKCU\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" /v "SubscribedContent-338388Enabled" /t REG_DWORD /d "0" /f > $null 2>&1
+    Reg.exe Add "HKCU\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" /v "SubscribedContentEnabled" /t REG_DWORD /d "0" /f > $null 2>&1
+    Reg.exe Add "HKCU\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" /v "SoftLandingEnabled" /t REG_DWORD /d "0" /f > $null 2>&1
+    Reg.exe Add "HKCU\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" /v "FeatureManagementEnabled" /t REG_DWORD /d "0" /f > $null 2>&1
+    Reg.exe Add "HKCU\Software\Policies\Microsoft\Windows\Explorer" /v "DisableSearchBoxSuggestions" /t REG_DWORD /d "1" /f > $null 2>&1
+    Reg.exe Add "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer" /v "AllowOnlineTips" /t REG_DWORD /d "0" /f > $null 2>&1
 
     # Disable Task Offload
-    Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\TCPIP\Parameters" -Name "DisableTaskOffload" -Value 1 -Type DWord -Force
+    Reg.exe Add "HKLM\SYSTEM\CurrentControlSet\Services\TCPIP\Parameters" /v "DisableTaskOffload" /t REG_DWORD /d "1" /f > $null
 
     # Disable Windows Error Reporting
-    $werPaths = @(
-        "HKLM:\SYSTEM\CurrentControlSet\Services\wercplsupport",
-        "HKLM:\SYSTEM\CurrentControlSet\Services\WerSvc",
-        "HKLM:\SOFTWARE\Policies\Microsoft\Windows\HandwritingErrorReports",
-        "HKLM:\SOFTWARE\Microsoft\PCHealth\ErrorReporting",
-        "HKLM:\SOFTWARE\Policies\Microsoft\PCHealth\ErrorReporting",
-        "HKLM:\SOFTWARE\Microsoft\Windows\Windows Error Reporting",
-        "HKLM:\SOFTWARE\Policies\Microsoft\Windows\Windows Error Reporting"
-    )
-
-    foreach ($path in $werPaths) {
-        Set-ItemProperty -Path $path -Name "Start" -Value 4 -Type DWord -Force
-        Set-ItemProperty -Path $path -Name "DoReport" -Value 0 -Type DWord -Force
-        Set-ItemProperty -Path $path -Name "Disabled" -Value 1 -Type DWord -Force
-        Set-ItemProperty -Path $path -Name "DontSendAdditionalData" -Value 1 -Type DWord -Force
-        Set-ItemProperty -Path $path -Name "ShowUI" -Value 0 -Type DWord -Force
-    }
-
-    # Additional settings specific for Error Reporting
-    Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\Windows Error Reporting\Assert Filtering Policy" -Name "ReportAndContinue" -Value 0 -Type DWord -Force
-    Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\Windows Error Reporting\Consent" -Name "DefaultConsent" -Value 0 -Type DWord -Force
+    Reg.exe Add "HKLM\SYSTEM\CurrentControlSet\Services\wercplsupport" /v "Start" /t REG_DWORD /d "4" /f > $null 2>&1
+    Reg.exe Add "HKLM\SYSTEM\CurrentControlSet\Services\WerSvc" /v "Start" /t REG_DWORD /d "4" /f > $null 2>&1
+    Reg.exe Add "HKLM\SOFTWARE\Policies\Microsoft\Windows\HandwritingErrorReports" /v "PreventHandwritingErrorReports" /t REG_DWORD /d "1" /f > $null 2>&1
+    Reg.exe Add "HKLM\SOFTWARE\Microsoft\PCHealth\ErrorReporting" /v "DoReport" /t REG_DWORD /d "0" /f > $null 2>&1
+    Reg.exe Add "HKLM\SOFTWARE\Policies\Microsoft\PCHealth\ErrorReporting" /v "DoReport" /t REG_DWORD /d "0" /f > $null 2>&1
+    Reg.exe Add "HKLM\SOFTWARE\Microsoft\PCHealth\ErrorReporting" /v "ShowUI" /t REG_DWORD /d "0" /f > $null 2>&1
+    Reg.exe Add "HKLM\SOFTWARE\Policies\Microsoft\Windows\Windows Error Reporting" /v "Disabled" /t REG_DWORD /d "1" /f > $null 2>&1
+    Reg.exe Add "HKLM\SOFTWARE\Policies\Microsoft\Windows\Windows Error Reporting" /v "DontSendAdditionalData" /t REG_DWORD /d "1" /f > $null 2>&1
+    Reg.exe Add "HKLM\SOFTWARE\Microsoft\Windows\Windows Error Reporting" /v "Disabled" /t REG_DWORD /d "1" /f > $null 2>&1
+    Reg.exe Add "HKLM\SOFTWARE\Microsoft\Windows\Windows Error Reporting" /v "DontSendAdditionalData" /t REG_DWORD /d "1" /f > $null 2>&1
+    Reg.exe Add "HKLM\SOFTWARE\Microsoft\Windows\Windows Error Reporting" /v "DontShowUI" /t REG_DWORD /d "1" /f > $null 2>&1
+    Reg.exe Add "HKLM\SOFTWARE\Microsoft\Windows\Windows Error Reporting" /v "LoggingDisabled" /t REG_DWORD /d "1" /f > $null 2>&1
+    Reg.exe Add "HKLM\SOFTWARE\Microsoft\Windows\Windows Error Reporting\Assert Filtering Policy" /v "ReportAndContinue" /t REG_DWORD /d "0" /f > $null 2>&1
+    Reg.exe Add "HKLM\SOFTWARE\Microsoft\Windows\Windows Error Reporting\Consent" /v "DefaultConsent" /t REG_DWORD /d "0" /f > $null 2>&1
 
     # Disable GameBar
-    $gameBarPaths = @(
-        "HKCU:\Software\Microsoft\Windows\CurrentVersion\GameDVR",
-        "HKCU:\System\GameConfigStore",
-        "HKLM:\SOFTWARE\Policies\Microsoft\Windows\GameDVR",
-        "HKCU:\Software\Microsoft\GameBar"
-    )
-
-    foreach ($path in $gameBarPaths) {
-        Set-ItemProperty -Path $path -Name "AppCaptureEnabled" -Value 0 -Type DWord -Force
-        Set-ItemProperty -Path $path -Name "AudioCaptureEnabled" -Value 0 -Type DWord -Force
-        Set-ItemProperty -Path $path -Name "CursorCaptureEnabled" -Value 0 -Type DWord -Force
-        Set-ItemProperty -Path $path -Name "GameDVR_Enabled" -Value 0 -Type DWord -Force
-        Set-ItemProperty -Path $path -Name "AllowGameDVR" -Value 0 -Type DWord -Force
-        Set-ItemProperty -Path $path -Name "ShowStartupPanel" -Value 0 -Type DWord -Force
-        Set-ItemProperty -Path $path -Name "UseNexusForGameBarEnabled" -Value 0 -Type DWord -Force
-    }
+    Reg.exe Add "HKCU\Software\Microsoft\Windows\CurrentVersion\GameDVR" /v "AppCaptureEnabled" /t REG_DWORD /d "0" /f > $null 2>&1
+    Reg.exe Add "HKCU\Software\Microsoft\Windows\CurrentVersion\GameDVR" /v "AudioCaptureEnabled" /t REG_DWORD /d "0" /f > $null 2>&1
+    Reg.exe Add "HKCU\Software\Microsoft\Windows\CurrentVersion\GameDVR" /v "CursorCaptureEnabled" /t REG_DWORD /d "0" /f > $null 2>&1
+    Reg.exe Add "HKCU\System\GameConfigStore" /v "GameDVR_Enabled" /t REG_DWORD /d "0" /f > $null 2>&1
+    Reg.exe Add "HKLM\SOFTWARE\Policies\Microsoft\Windows\GameDVR" /v "AllowGameDVR" /t REG_DWORD /d "0" /f > $null 2>&1
+    Reg.exe Add "HKCU\Software\Microsoft\GameBar" /v "ShowStartupPanel" /t REG_DWORD /d "0" /f > $null 2>&1
+    Reg.exe Add "HKCU\Software\Microsoft\GameBar" /v "UseNexusForGameBarEnabled" /t REG_DWORD /d "0" /f > $null 2>&1
 
     # Disabling Windows Power throttling
-    Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\Power\PowerThrottling" -Name "PowerThrottlingOff" -Value 1 -Type DWord -Force
+    Reg.exe Add "HKLM\SYSTEM\CurrentControlSet\Control\Power\PowerThrottling" /v "PowerThrottlingOff" /t REG_DWORD /d "1" /f > $null
 
-    # Disable Compatibility Assistant
-    Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\PcaSvc" -Name "Start" -Value 4 -Type DWord -Force
+    # Disable Compability Assistant
+    Reg.exe Add "HKLM\SYSTEM\CurrentControlSet\Services\PcaSvc" /v "Start" /t REG_DWORD /d "4" /f > $null 2>&1
 
     # Disable Windows Tracking & Telemetry services
-    $telemetryPaths = @(
-        "HKLM:\SYSTEM\CurrentControlSet\Services\WMPNetworkSvc",
-        "HKLM:\SYSTEM\CurrentControlSet\Control\WMI\AutoLogger\SQMLogger",
-        "HKLM:\SYSTEM\CurrentControlSet\Services\DiagTrack",
-        "HKLM:\SYSTEM\CurrentControlSet\Services\diagnosticshub.standardcollector.service",
-        "HKLM:\SYSTEM\CurrentControlSet\Services\dmwappushservice",
-        "HKLM:\SYSTEM\CurrentControlSet\Services\diagsvc",
-        "HKLM:\SYSTEM\CurrentControlSet\Services\DcpSvc",
-        "HKLM:\SYSTEM\CurrentControlSet\Services\WdiServiceHost",
-        "HKLM:\SYSTEM\CurrentControlSet\Control\WMI\Autologger\AutoLogger-Diagtrack-Listener",
-        "HKLM:\SYSTEM\CurrentControlSet\Control\WMI\AutoLogger\Diagtrack-Listener"
-    )
-
-    foreach ($path in $telemetryPaths) {
-        Set-ItemProperty -Path $path -Name "Start" -Value 4 -Type DWord -Force
-    }
+    Reg.exe Add "HKLM\SYSTEM\CurrentControlSet\Services\WMPNetworkSvc" /v "Start" /t REG_DWORD /d "4" /f > $null 2>&1
+    Reg.exe Add "HKLM\SYSTEM\CurrentControlSet\Control\WMI\AutoLogger\SQMLogger" /v "Start" /t REG_DWORD /d "0" /f > $null 2>&1
+    Reg.exe Add "HKLM\SYSTEM\CurrentControlSet\Services\DiagTrack" /v "Start" /t REG_DWORD /d "4" /f > $null 2>&1
+    Reg.exe Add "HKLM\SYSTEM\CurrentControlSet\Services\diagnosticshub.standardcollector.service" /v "Start" /t REG_DWORD /d "4" /f > $null 2>&1
+    Reg.exe Add "HKLM\SYSTEM\CurrentControlSet\Services\dmwappushservice" /v "Start" /t REG_DWORD /d "4" /f > $null 2>&1
+    Reg.exe Add "HKLM\SYSTEM\CurrentControlSet\Services\diagsvc" /v "Start" /t REG_DWORD /d "4" /f > $null 2>&1
+    Reg.exe Add "HKLM\SYSTEM\CurrentControlSet\Services\DcpSvc" /v "Start" /t REG_DWORD /d "4" /f > $null 2>&1
+    Reg.exe Add "HKLM\SYSTEM\CurrentControlSet\Services\WdiServiceHost" /v "Start" /t REG_DWORD /d "4" /f > $null 2>&1
+    Reg.exe Add "HKLM\SYSTEM\CurrentControlSet\Control\WMI\Autologger\AutoLogger-Diagtrack-Listener" /v "Start" /t REG_DWORD /d "0" /f > $null 2>&1
+    Reg.exe Add "HKLM\SYSTEM\CurrentControlSet\Control\WMI\AutoLogger\Diagtrack-Listener" /v "Start" /t REG_DWORD /d "0" /f > $null 2>&1
 
     # Disable Windows Update/Store AutoUpdate and Telemetry
-    $deliveryOptimizationPaths = @(
-        "HKLM:\SOFTWARE\Policies\Microsoft\Windows\DeliveryOptimization",
-        "HKLM:\SOFTWARE\Policies\Microsoft\Windows\CurrentVersion\DeliveryOptimization\Config",
-        "HKLM:\Software\Microsoft\Windows\CurrentVersion\DeliveryOptimization",
-        "HKLM:\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate\AU",
-        "HKLM:\SYSTEM\CurrentControlSet\Services\wuauserv"
-    )
-    foreach ($path in $deliveryOptimizationPaths) {
-        Set-ItemProperty -Path $path -Name "DODownloadMode" -Value 0 -Type DWord -Force
-        Set-ItemProperty -Path $path -Name "SystemSettingsDownloadMode" -Value 0 -Type DWord -Force
-        Set-ItemProperty -Path $path -Name "NoAutoUpdate" -Value 1 -Type DWord -Force
-        Set-ItemProperty -Path $path -Name "Start" -Value 3 -Type DWord -Force
-    }
-
-    Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Speech" -Name "AllowSpeechModelUpdate" -Value 0 -Type DWord -Force
-    Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Device Metadata" -Name "PreventDeviceMetadataFromNetwork" -Value 1 -Type DWord -Force
-    Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\WindowsStore\WindowsUpdate" -Name "AutoDownload" -Value 2 -Type DWord -Force
-    Set-ItemProperty -Path "HKLM:\Software\Policies\Microsoft\WindowsStore" -Name "AutoDownload" -Value 2 -Type DWord -Force
+    Reg.exe Add "HKLM\SOFTWARE\Policies\Microsoft\Windows\DeliveryOptimization" /v "DODownloadMode" /t REG_DWORD /d "0" /f > $null 2>&1
+    Reg.exe Add "HKLM\SOFTWARE\Policies\Microsoft\Windows\CurrentVersion\DeliveryOptimization\Config" /v "DODownloadMode" /t REG_DWORD /d "0" /f > $null 2>&1
+    Reg.exe Add "HKLM\Software\Microsoft\Windows\CurrentVersion\DeliveryOptimization" /v "SystemSettingsDownloadMode" /t REG_DWORD /d "0" /f > $null 2>&1
+    Reg.exe Add "HKLM\SOFTWARE\Policies\Microsoft\Speech" /v "AllowSpeechModelUpdate" /t REG_DWORD /d "0" /f > $null 2>&1
+    Reg.exe Add "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Device Metadata" /v "PreventDeviceMetadataFromNetwork" /t REG_DWORD /d "1" /f > $null 2>&1
+    Reg.exe Add "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\WindowsStore\WindowsUpdate" /v "AutoDownload" /t REG_DWORD /d "2" /f > $null 2>&1
+    Reg.exe Add "HKLM\Software\Policies\Microsoft\WindowsStore" /v "AutoDownload" /t REG_DWORD /d "2" /f > $null 2>&1
+    Reg.exe Add "HKLM\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate\AU" /v "NoAutoUpdate" /t REG_DWORD /d "1" /f > $null 2>&1
+    Reg.exe Add "HKLM\SYSTEM\CurrentControlSet\Services\wuauserv" /v "Start" /t REG_DWORD /d "3" /f > $null 2>&1
 
     # Disable Xbox
-    $xboxServices = @(
-        "XboxNetApiSvc",
-        "XblAuthManager",
-        "XblGameSave",
-        "XboxGipSvc",
-        "xbgm"
-    )
-    foreach ($service in $xboxServices) {
-        Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\$service" -Name "Start" -Value 4 -Type DWord -Force
-    }
+    Reg.exe Add "HKLM\SYSTEM\CurrentControlSet\Services\XboxNetApiSvc" /v "Start" /t REG_DWORD /d "4" /f > $null 2>&1
+    Reg.exe Add "HKLM\SYSTEM\CurrentControlSet\Services\XblAuthManager" /v "Start" /t REG_DWORD /d "4" /f > $null 2>&1
+    Reg.exe Add "HKLM\SYSTEM\CurrentControlSet\Services\XblGameSave" /v "Start" /t REG_DWORD /d "4" /f > $null 2>&1
+    Reg.exe Add "HKLM\SYSTEM\CurrentControlSet\Services\XboxGipSvc" /v "Start" /t REG_DWORD /d "4" /f > $null 2>&1
+    Reg.exe Add "HKLM\SYSTEM\CurrentControlSet\Services\xbgm" /v "Start" /t REG_DWORD /d "4" /f > $null 2>&1
 
     # Classic Right Click Menu
-    Remove-Item -Path "HKCU:\Software\Classes\CLSID\{86ca1aa0-34aa-4e8b-a509-50c905bae2a2}\InprocServer32" -Force
+    Reg.exe --% Add "HKCU\Software\Classes\CLSID\{86ca1aa0-34aa-4e8b-a509-50c905bae2a2}\InprocServer32" /ve /d "" /f | Out-Null
 
     # Explorer Compact mode
-    Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name "UseCompactMode" -Value 1 -Type DWord -Force
+    Reg.exe Add "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" /v "UseCompactMode" /t REG_DWORD /d "1" /f > $null 2>&1
 
     # Nvidia Optimization
-    Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\GraphicsDrivers" -Name "PlatformSupportMiracast" -Value 0 -Type DWord -Force
-    Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\nvlddmkm\Global\NVTweak" -Name "DisplayPowerSaving" -Value 0 -Type DWord -Force
-    Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\nvlddmkm" -Name "DisableWriteCombining" -Value 1 -Type DWord -Force
-    Remove-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\nvlddmkm" -Name "DisablePreemption" -Force
-    Remove-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\nvlddmkm" -Name "DisableCudaContextPreemption" -Force
-    Remove-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\nvlddmkm" -Name "EnableCEPreemption" -Force
-    Remove-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\nvlddmkm" -Name "DisablePreemptionOnS3S4" -Force
-    Remove-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\nvlddmkm" -Name "ComputePreemption" -Force
-    Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\nvlddmkm\FTS" -Name "EnableRID61684" -Value 1 -Type DWord -Force
-
-    # Nvidia additional settings
-    $registryKeys = (Invoke-Expression -Command 'reg query "HKLM\System\CurrentControlSet\Control\Class\{4d36e968-e325-11ce-bfc1-08002be10318}" /t REG_SZ /s /e /f "NVIDIA"')
+    Reg Add "HKLM\SYSTEM\CurrentControlSet\Control\GraphicsDrivers" /v "PlatformSupportMiracast" /t Reg_DWORD /d "0" /f > $null 2>&1
+    Reg Add "HKLM\SYSTEM\CurrentControlSet\Services\nvlddmkm\Global\NVTweak" /v "DisplayPowerSaving" /t Reg_DWORD /d "0" /f > $null 2>&1
+    Reg Add "HKLM\SYSTEM\CurrentControlSet\Services\nvlddmkm" /v "DisableWriteCombining" /t Reg_DWORD /d "1" /f > $null 2>&1
+    Reg Delete "HKLM\SYSTEM\CurrentControlSet\Services\nvlddmkm" /v "DisablePreemption" /f > $null 2>&1
+    Reg Delete "HKLM\SYSTEM\CurrentControlSet\Services\nvlddmkm" /v "DisableCudaContextPreemption" /f > $null 2>&1
+    Reg Delete "HKLM\SYSTEM\CurrentControlSet\Services\nvlddmkm" /v "EnableCEPreemption" /f > $null 2>&1
+    Reg Delete "HKLM\SYSTEM\CurrentControlSet\Services\nvlddmkm" /v "DisablePreemptionOnS3S4" /f > $null 2>&1
+    Reg Delete "HKLM\SYSTEM\CurrentControlSet\Services\nvlddmkm" /v "ComputePreemption" /f > $null 2>&1
+    Try {
+        Nvidia-smi -acp UNRESTRICTED > $null 2>&1
+    } Catch {}
+    Try {
+        Nvidia-smi -acp DEFAULT > $null 2>&1
+    } Catch {}
+    Reg Add "HKLM\SYSTEM\CurrentControlSet\Services\nvlddmkm\FTS" /v "EnableRID61684" /t REG_DWORD /d "1" /f > $null 2>&1
+    $registryKeys = Invoke-Expression -Command 'reg query "HKLM\System\CurrentControlSet\Control\Class\{4d36e968-e325-11ce-bfc1-08002be10318}" /t REG_SZ /s /e /f "NVIDIA" | findstr "HKEY"'
     foreach ($key in $registryKeys) {
-        Set-ItemProperty -Path $key -Name "EnableTiledDisplay" -Value 0 -Type DWord -Force
-        Set-ItemProperty -Path $key -Name "TCCSupported" -Value 0 -Type DWord -Force
+        Reg Add "$key" /v "EnableTiledDisplay" /t REG_DWORD /d "0" /f > $null 2>&1
+        Reg Add "$key" /v "TCCSupported" /t REG_DWORD /d "0" /f > $null 2>&1
     }
 
-    # Privacy Settings
-    Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\Shell\Associations\AppUrlAssociations\share.microsoft.com\AppX6bvervyj4dbgfhwjaqdvcttzfgz9rvpv\UserChoice" -Name "Hash" -Value "hhJ5zpMlfwI=" -Type String -Force
-    Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\Shell\Associations\AppUrlAssociations\share.microsoft.com\AppX6bvervyj4dbgfhwjaqdvcttzfgz9rvpv\UserChoice" -Name "Enabled" -Value 0 -Type DWord -Force
-    Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\Remote Assistance" -Name "fAllowToGetHelp" -Value 0 -Type DWord -Force
-    Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\Lsa" -Name "restrictanonymous" -Value 1 -Type DWord -Force
-    Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\MRT" -Name "DontOfferThroughWUAU" -Value 1 -Type DWord -Force
-    Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\MRT" -Name "DontReportinfectioninformation" -Value 1 -Type DWord -Force
-    Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\PolicyManager\current\device\Experience" -Name "AllowTailoredExperiencesWithDiagnosticData" -Value 0 -Type DWord -Force
-    Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\PenWorkspace" -Name "PenWorkspaceAppSuggestionsEnabled" -Value 0 -Type DWord -Force
-    Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\DusmSvc\Settings" -Name "DisableSystemBucket" -Value 1 -Type DWord -Force
-    Set-ItemProperty -Path "HKLM:\Software\Policies\Microsoft\Windows\CloudContent" -Name "DisableWindowsConsumerFeatures" -Value 1 -Type DWord -Force
-    Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer" -Name "NoInstrumentation" -Value 1 -Type DWord -Force
-    Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\Environment" -Name "POWERSHELL_TELEMETRY_OPTOUT" -Value "1" -Type String -Force
-    Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\DataCollection" -Name "MaxTelemetryAllowed" -Value 0 -Type DWord -Force
-    Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\DataCollection" -Name "DoNotShowFeedbackNotifications" -Value 1 -Type DWord -Force
-    Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\DataCollection" -Name "AllowTelemetry" -Value 0 -Type DWord -Force
-    Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\TabletPC" -Name "PreventHandwritingDataSharing" -Value 1 -Type DWord -Force
-    Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" -Name "RotatingLockScreenOverlayEnabled" -Value 0 -Type DWord -Force
-    Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" -Name "RotatingLockScreenEnabled" -Value 0 -Type DWord -Force
-    Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" -Name "DisableWindowsSpotlightFeatures" -Value 1 -Type DWord -Force
-    Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" -Name "DisableTailoredExperiencesWithDiagnosticData" -Value 1 -Type DWord -Force
-    Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\CloudContent" -Name "DisableCloudOptimizedContent" -Value 1 -Type DWord -Force
-    Set-ItemProperty -Path "HKCU:\Software\Policies\Microsoft\Windows\CloudContent" -Name "DisableWindowsSpotlightFeatures" -Value 1 -Type DWord -Force
-    Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\Windows Feeds" -Name "EnableFeeds" -Value 0 -Type DWord -Force
-    Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\AdvertisingInfo" -Name "Enabled" -Value 0 -Type DWord -Force
-    Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\PolicyManager\current\device\Bluetooth" -Name "AllowAdvertising" -Value 0 -Type DWord -Force
-    Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System" -Name "DisableAutomaticRestartSignOn" -Value 1 -Type DWord -Force
-    Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\AdvertisingInfo" -Name "DisabledByGroupPolicy" -Value 1 -Type DWord -Force
-    Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\TextInput" -Name "AllowLinguisticDataCollection" -Value 0 -Type DWord -Force
-    Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\InputPersonalization" -Name "AllowInputPersonalization" -Value 0 -Type DWord -Force
-    Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\SearchSettings" -Name "SafeSearchMode" -Value 0 -Type DWord -Force
-    Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\System" -Name "UploadUserActivities" -Value 0 -Type DWord -Force
-    Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\System" -Name "EnableActivityFeed" -Value 0 -Type DWord -Force
-    Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\System" -Name "EnableCdp" -Value 0 -Type DWord -Force
-    Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\System" -Name "EnableMmx" -Value 0 -Type DWord -Force
-    Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\System" -Name "RSoPLogging" -Value 0 -Type DWord -Force
-    Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\Messaging" -Name "AllowMessageSync" -Value 0 -Type DWord -Force
-    Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\SettingSync" -Name "DisableCredentialsSettingSync" -Value 2 -Type DWord -Force
-    Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\SettingSync" -Name "DisableCredentialsSettingSyncUserOverride" -Value 1 -Type DWord -Force
-    Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\SettingSync" -Name "DisableApplicationSettingSync" -Value 2 -Type DWord -Force
-    Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\SettingSync" -Name "DisableApplicationSettingSyncUserOverride" -Value 1 -Type DWord -Force
-    Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\AppPrivacy" -Name "LetAppsActivateWithVoice" -Value 2 -Type DWord -Force
-    Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\AppPrivacy" -Name "LetAppsSyncWithDevices" -Value 2 -Type DWord -Force
-    Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\FindMyDevice" -Name "AllowFindMyDevice" -Value 0 -Type DWord -Force
-    Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Settings\FindMyDevice" -Name "LocationSyncEnabled" -Value 0 -Type DWord -Force
-    Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Privacy" -Name "TailoredExperiencesWithDiagnosticDataEnabled" -Value 0 -Type DWord -Force
-    Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Diagnostics\DiagTrack" -Name "ShowedToastAtLevel" -Value 1 -Type DWord -Force
-    Set-ItemProperty -Path "HKCU:\Software\Microsoft\Speech_OneCore\Settings\OnlineSpeechPrivacy" -Name "HasAccepted" -Value 0 -Type DWord -Force
-    Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\CapabilityAccessManager\ConsentStore\location" -Name "Value" -Value "Deny" -Type String -Force
-    Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\WindowsSelfHost\UI\Visibility" -Name "DiagnosticErrorText" -Value 0 -Type DWord -Force
-    Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\WindowsSelfHost\UI\Strings" -Name "DiagnosticErrorText" -Value " " -Type String -Force
-    Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\WindowsSelfHost\UI\Strings" -Name "DiagnosticLinkText" -Value " " -Type String -Force
-    Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\AppCompat" -Name "DisableInventory" -Value 1 -Type DWord -Force
-    Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\AppCompat" -Name "DisableUAR" -Value 1 -Type DWord -Force
-    Set-ItemProperty -Path "HKLM:\Software\Microsoft\Input\TIPC" -Name "Enabled" -Value 0 -Type DWord -Force
-    Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\SQMClient\Windows" -Name "CEIPEnable" -Value 0 -Type DWord -Force
-    Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\SQMClient\Windows" -Name "CEIPEnable" -Value 0 -Type DWord -Force
-    Set-ItemProperty -Path "HKCU:\Control Panel\International\User Profile" -Name "HttpAcceptLanguageOptOut" -Value 1 -Type DWord -Force
-    Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\DeviceAccess\Global\{C1D23ACC-752B-43E5-8448-8D0E519CD6D6}" -Name "Value" -Value "Deny" -Type String -Force
-    Set-ItemProperty -Path "HKLM:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name "Start_TrackProgs" -Value 0 -Type DWord -Force
-    Set-ItemProperty -Path "HKLM:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name "ShowSyncProviderNotifications" -Value 0 -Type DWord -Force
-    Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\DeviceAccess\Global\{2297E4E2-5DBE-466D-A12B-0F8286F0D9CA}" -Name "Value" -Value "Deny" -Type String -Force
-    Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\DeviceAccess\Global\{E5323777-F976-4f5b-9B55-B94699C46E44}" -Name "Value" -Value "Deny" -Type String -Force
-    Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\DeviceAccess\Global\{2EEF81BE-33FA-4800-9670-1CD474972C3F}" -Name "Value" -Value "Deny" -Type String -Force
-    Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\DeviceAccess\Global\{52079E78-A92B-413F-B213-E8FE35712E72}" -Name "Value" -Value "Deny" -Type String -Force
-    Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\DeviceAccess\Global\{7D7E8402-7C54-4821-A34E-AEEFD62DED93}" -Name "Value" -Value "Deny" -Type String -Force
-    Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\DeviceAccess\Global\{D89823BA-7180-4B81-B50C-7E471E6121A3}" -Name "Value" -Value "Deny" -Type String -Force
-    Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\DeviceAccess\Global\{8BC668CF-7728-45BD-93F8-CF2B3B41D7AB}" -Name "Value" -Value "Deny" -Type String -Force
-    Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\DeviceAccess\Global\{9231CB4C-BF57-4AF3-8C55-FDA7BFCC04C5}" -Name "Value" -Value "Deny" -Type String -Force
-    Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\DeviceAccess\Global\{E390DF20-07DF-446D-B962-F5C953062741}" -Name "Value" -Value "Deny" -Type String -Force
-    Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\DeviceAccess\Global\{992AFA70-6F47-4148-B3E9-3003349C1548}" -Name "Value" -Value "Deny" -Type String -Force
-    Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\WMDRM" -Name "DisableOnline" -Value 1 -Type DWord -Force
-    Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\DeviceAccess\Global\{A8804298-2D5F-42E3-9531-9C8C39EB29CE}" -Name "Value" -Value "Deny" -Type String -Force
-    Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\DeviceAccess\Global\LooselyCoupled" -Name "Value" -Value "Deny" -Type String -Force
-    Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\PolicyManager\current\device\Browser" -Name "AllowAddressBarDropdown" -Value 0 -Type DWord -Force
-    Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Speech_OneCore\Preferences" -Name "ModelDownloadAllowed" -Value 0 -Type DWord -Force
-    Set-ItemProperty -Path "HKLM:\Software\Microsoft\InputPersonalization\TrainedDataStore" -Name "HarvestContacts" -Value 0 -Type DWord -Force
-    Set-ItemProperty -Path "HKLM:\Software\Microsoft\InputPersonalization" -Name "RestrictImplicitTextCollection" -Value 1 -Type DWord -Force
-    Set-ItemProperty -Path "HKLM:\Software\Microsoft\Personalization\Settings" -Name "RestrictImplicitInkCollection" -Value 1 -Type DWord -Force
-    Set-ItemProperty -Path "HKLM:\Software\Microsoft\InputPersonalization" -Name "RestrictImplicitInkCollection" -Value 1 -Type DWord -Force
-    Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Personalization\Settings" -Name "AcceptedPrivacyPolicy" -Value 0 -Type DWord -Force
-    Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\LocationAndSensors" -Name "DisableWindowsLocationProvider" -Value 1 -Type DWord -Force
-    Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\LocationAndSensors" -Name "DisableLocationScripting" -Value 1 -Type DWord -Force
-    Set-ItemProperty -Path "HKLM:\Software\Microsoft\Windows NT\CurrentVersion\Sensor\Overrides\{BFA794E4-F964-4FDB-90F6-51056BFE4B44}" -Name "SensorPermissionState" -Value 0 -Type DWord -Force
-    Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\OneDrive" -Name "PreventNetworkTrafficPreUserSignIn" -Value 1 -Type DWord -Force
-    Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender\Spynet" -Name "SpyNetReporting" -Value 0 -Type DWord -Force
-    Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender\Spynet" -Name "SubmitSamplesConsent" -Value 2 -Type DWord -Force
-    Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\MRT" -Name "DontReportInfectionInformation" -Value 1 -Type DWord -Force
-    Set-ItemProperty -Path "HKLM:\Software\Microsoft\Siuf\Rules" -Name "NumberOfSIUFInPeriod" -Value 0 -Type DWord -Force
-    Set-ItemProperty -Path "HKLM:\Software\Microsoft\Siuf\Rules" -Name "PeriodInNanoSeconds" -Value 0 -Type DWord -Force
+    # Privacy
+    Reg.exe Add "HKCU\Software\Microsoft\Windows\Shell\Associations\AppUrlAssociations\share.microsoft.com\AppX6bvervyj4dbgfhwjaqdvcttzfgz9rvpv\UserChoice" /v "Hash" /t REG_SZ /d "hhJ5zpMlfwI=" /f > $null 2>&1
+    Reg.exe Add "HKCU\Software\Microsoft\Windows\Shell\Associations\AppUrlAssociations\share.microsoft.com\AppX6bvervyj4dbgfhwjaqdvcttzfgz9rvpv\UserChoice" /v "Enabled" /t REG_DWORD /d "0" /f > $null 2>&1
+    Reg.exe Add "HKLM\SYSTEM\CurrentControlSet\Control\Remote Assistance" /v "fAllowToGetHelp" /t REG_DWORD /d "0" /f > $null 2>&1
+    Reg.exe Add "HKLM\SYSTEM\CurrentControlSet\Control\Lsa" /v "restrictanonymous" /t REG_DWORD /d "1" /f > $null 2>&1
+    Reg.exe Add "HKLM\SOFTWARE\Policies\Microsoft\MRT" /v "DontOfferThroughWUAU" /t "REG_DWORD" /d "1" /f > $null 2>&1
+    Reg.exe Add "HKLM\SOFTWARE\Policies\Microsoft\MRT" /v "DontReportinfectioninformation" /t REG_DWORD /d "1" /f > $null 2>&1
+    Reg.exe Add "HKLM\SOFTWARE\Microsoft\PolicyManager\current\device\Experience" /v "AllowTailoredExperiencesWithDiagnosticData" /t REG_DWORD /d "0" /f > $null 2>&1
+    Reg.exe Add "HKCU\Software\Microsoft\Windows\CurrentVersion\PenWorkspace" /v "PenWorkspaceAppSuggestionsEnabled" /t REG_DWORD /d "0" /f > $null 2>&1
+    Reg.exe Add "HKLM\SOFTWARE\Microsoft\DusmSvc\Settings" /v "DisableSystemBucket" /t REG_DWORD /d "1" /f > $null 2>&1
+    Reg.exe Add "HKLM\Software\Policies\Microsoft\Windows\CloudContent" /v "DisableWindowsConsumerFeatures" /t REG_DWORD /d "1" /f > $null 2>&1
+    Reg.exe Add "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer" /v "NoInstrumentation" /t REG_DWORD /d "1" /f > $null 2>&1
+    Reg.exe Add "HKLM\SYSTEM\CurrentControlSet\Control\Session Manager\Environment" /v "POWERSHELL_TELEMETRY_OPTOUT" /t REG_SZ /d "1" /f > $null 2>&1
+    Reg.exe Add "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\DataCollection" /v "MaxTelemetryAllowed" /t REG_DWORD /d "0" /f > $null 2>&1
+    Reg.exe Add "HKLM\SOFTWARE\Policies\Microsoft\Windows\DataCollection" /v "DoNotShowFeedbackNotifications" /t REG_DWORD /d "1" /f > $null 2>&1
+    Reg.exe Add "HKLM\SOFTWARE\Policies\Microsoft\Windows\DataCollection" /v "AllowTelemetry" /t REG_DWORD /d "0" /f > $null 2>&1
+    Reg.exe Add "HKLM\SOFTWARE\Policies\Microsoft\Windows\TabletPC" /v "PreventHandwritingDataSharing" /t REG_DWORD /d "1" /f > $null 2>&1
+    Reg.exe Add "HKCU\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" /v "RotatingLockScreenOverlayEnabled" /t REG_DWORD /d "0" /f > $null 2>&1
+    Reg.exe Add "HKCU\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" /v "RotatingLockScreenEnabled" /t REG_DWORD /d "0" /f > $null 2>&1
+    Reg.exe Add "HKCU\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" /v "DisableWindowsSpotlightFeatures" /t REG_DWORD /d "1" /f > $null 2>&1
+    Reg.exe Add "HKCU\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" /v "DisableTailoredExperiencesWithDiagnosticData" /t REG_DWORD /d "1" /f > $null 2>&1
+    Reg.exe Add "HKLM\SOFTWARE\Policies\Microsoft\Windows\CloudContent" /v "DisableCloudOptimizedContent" /t REG_DWORD /d "1" /f > $null 2>&1
+    Reg.exe Add "HKCU\Software\Policies\Microsoft\Windows\CloudContent" /v "DisableWindowsSpotlightFeatures" /t REG_DWORD /d "1" /f > $null 2>&1
+    Reg.exe Add "HKLM\SOFTWARE\Policies\Microsoft\Windows\Windows Feeds" /v "EnableFeeds" /t REG_DWORD /d "0" /f > $null 2>&1
+    Reg.exe Add "HKCU\Software\Microsoft\Windows\CurrentVersion\AdvertisingInfo" /v "Enabled" /t REG_DWORD /d "0" /f > $null 2>&1
+    Reg.exe Add "HKLM\SOFTWARE\Microsoft\PolicyManager\current\device\Bluetooth" /v "AllowAdvertising" /t REG_DWORD /d "0" /f > $null 2>&1
+    Reg.exe Add "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System" /v "DisableAutomaticRestartSignOn" /t REG_DWORD /d "1" /f > $null 2>&1
+    Reg.exe Add "HKLM\SOFTWARE\Policies\Microsoft\Windows\AdvertisingInfo" /v "DisabledByGroupPolicy" /t REG_DWORD /d "1" /f > $null 2>&1
+    Reg.exe Add "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\TextInput" /v "AllowLinguisticDataCollection" /t REG_DWORD /d "0" /f > $null 2>&1
+    Reg.exe Add "HKLM\SOFTWARE\Policies\Microsoft\InputPersonalization" /v "AllowInputPersonalization" /t REG_DWORD /d "0" /f > $null 2>&1
+    Reg.exe Add "HKCU\Software\Microsoft\Windows\CurrentVersion\SearchSettings" /v "SafeSearchMode" /t REG_DWORD /d "0" /f > $null 2>&1
+    Reg.exe Add "HKLM\SOFTWARE\Policies\Microsoft\Windows\System" /v "UploadUserActivities" /t REG_DWORD /d "0" /f > $null 2>&1
+    Reg.exe Add "HKLM\SOFTWARE\Policies\Microsoft\Windows\System" /v "EnableActivityFeed" /t REG_DWORD /d "0" /f > $null 2>&1
+    Reg.exe Add "HKLM\SOFTWARE\Policies\Microsoft\Windows\System" /v "EnableCdp" /t REG_DWORD /d "0" /f > $null 2>&1
+    Reg.exe Add "HKLM\SOFTWARE\Policies\Microsoft\Windows\System" /v "EnableMmx" /t REG_DWORD /d "0" /f > $null 2>&1
+    Reg.exe Add "HKLM\SOFTWARE\Policies\Microsoft\Windows\System" /v "RSoPLogging" /t REG_DWORD /d "0" /f > $null 2>&1
+    Reg.exe Add "HKLM\SOFTWARE\Policies\Microsoft\Windows\Messaging" /v "AllowMessageSync" /t REG_DWORD /d "0" /f > $null 2>&1
+    Reg.exe Add "HKLM\SOFTWARE\Policies\Microsoft\Windows\SettingSync" /v "DisableCredentialsSettingSync" /t REG_DWORD /d "2" /f > $null 2>&1
+    Reg.exe Add "HKLM\SOFTWARE\Policies\Microsoft\Windows\SettingSync" /v "DisableCredentialsSettingSyncUserOverride" /t REG_DWORD /d "1" /f > $null 2>&1
+    Reg.exe Add "HKLM\SOFTWARE\Policies\Microsoft\Windows\SettingSync" /v "DisableApplicationSettingSync" /t REG_DWORD /d "2" /f > $null 2>&1
+    Reg.exe Add "HKLM\SOFTWARE\Policies\Microsoft\Windows\SettingSync" /v "DisableApplicationSettingSyncUserOverride" /t REG_DWORD /d "1" /f > $null 2>&1
+    Reg.exe Add "HKLM\SOFTWARE\Policies\Microsoft\Windows\AppPrivacy" /v "LetAppsActivateWithVoice" /t REG_DWORD /d "2" /f > $null 2>&1
+    Reg.exe Add "HKLM\SOFTWARE\Policies\Microsoft\Windows\AppPrivacy" /v "LetAppsSyncWithDevices" /t REG_DWORD /d "2" /f > $null 2>&1
+    Reg.exe Add "HKLM\SOFTWARE\Policies\Microsoft\FindMyDevice" /v "AllowFindMyDevice" /t REG_DWORD /d "0" /f > $null 2>&1
+    Reg.exe Add "HKLM\SOFTWARE\Microsoft\Settings\FindMyDevice" /v "LocationSyncEnabled" /t REG_DWORD /d "0" /f > $null 2>&1
+    Reg.exe Add "HKCU\Software\Microsoft\Windows\CurrentVersion\Privacy" /v "TailoredExperiencesWithDiagnosticDataEnabled" /t REG_DWORD /d "0" /f > $null 2>&1
+    Reg.exe Add "HKCU\Software\Microsoft\Windows\CurrentVersion\Diagnostics\DiagTrack" /v "ShowedToastAtLevel" /t REG_DWORD /d "1" /f > $null 2>&1
+    Reg.exe Add "HKCU\Software\Microsoft\Speech_OneCore\Settings\OnlineSpeechPrivacy" /v "HasAccepted" /t REG_DWORD /d "0" /f > $null 2>&1
+    Reg.exe Add "HKCU\Software\Microsoft\Windows\CurrentVersion\CapabilityAccessManager\ConsentStore\location" /v "Value" /d "Deny" /f > $null 2>&1
     Disable-ScheduledTask -TaskPath "\Microsoft\Windows\Application Experience" -TaskName "Microsoft Compatibility Appraiser" > $null 2>&1
+    Reg.exe Add "HKLM\SOFTWARE\Microsoft\WindowsSelfHost\UI\Visibility" /v "DiagnosticErrorText" /t REG_DWORD /d "0" /f > $null 2>&1
+    Reg.exe Add "HKLM\SOFTWARE\Microsoft\WindowsSelfHost\UI\Strings" /v "DiagnosticErrorText" /t REG_SZ /d " " /f > $null 2>&1
+    Reg.exe Add "HKLM\SOFTWARE\Microsoft\WindowsSelfHost\UI\Strings" /v "DiagnosticLinkText" /t REG_SZ /d " " /f > $null 2>&1
+    Reg.exe Add "HKLM\SOFTWARE\Policies\Microsoft\Windows\AppCompat" /v "DisableInventory" /t REG_DWORD /d "1" /f > $null 2>&1
+    Reg.exe Add "HKLM\SOFTWARE\Policies\Microsoft\Windows\AppCompat" /v "DisableUAR" /t REG_DWORD /d "1" /f > $null 2>&1
+    Reg.exe Add "HKLM\Software\Microsoft\Input\TIPC" /v "Enabled" /t REG_DWORD /d "0" /f > $null 2>&1
+    Reg.exe Add "HKLM\SOFTWARE\Microsoft\SQMClient\Windows" /v "CEIPEnable" /t REG_DWORD /d "0" /f > $null 2>&1
+    Reg.exe Add "HKLM\SOFTWARE\Policies\Microsoft\SQMClient\Windows" /v "CEIPEnable" /t REG_DWORD /d "0" /f > $null 2>&1
+    Reg.exe Add "HKCU\Control Panel\International\User Profile" /v "HttpAcceptLanguageOptOut" /t REG_DWORD /d "1" /f > $null 2>&1
+    Reg.exe Add "HKCU\Software\Microsoft\Windows\CurrentVersion\DeviceAccess\Global\{C1D23ACC-752B-43E5-8448-8D0E519CD6D6}" /v "Value" /t REG_SZ /d "Deny" /f > $null 2>&1
+    Reg.exe Add "HKLM\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" /v "Start_TrackProgs" /t REG_DWORD /d "0" /f > $null 2>&1
+    Reg.exe Add "HKLM\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" /v "ShowSyncProviderNotifications" /t REG_DWORD /d "0" /f > $null 2>&1
+    Reg.exe Add "HKCU\Software\Microsoft\Windows\CurrentVersion\DeviceAccess\Global\{2297E4E2-5DBE-466D-A12B-0F8286F0D9CA}" /v "Value" /t REG_SZ /d "Deny" /f > $null 2>&1
+    Reg.exe Add "HKCU\Software\Microsoft\Windows\CurrentVersion\DeviceAccess\Global\{E5323777-F976-4f5b-9B55-B94699C46E44}" /v "Value" /t REG_SZ /d "Deny" /f > $null 2>&1
+    Reg.exe Add "HKCU\Software\Microsoft\Windows\CurrentVersion\DeviceAccess\Global\{2EEF81BE-33FA-4800-9670-1CD474972C3F}" /v "Value" /t REG_SZ /d "Deny" /f > $null 2>&1
+    Reg.exe Add "HKCU\Software\Microsoft\Windows\CurrentVersion\DeviceAccess\Global\{52079E78-A92B-413F-B213-E8FE35712E72}" /v "Value" /t REG_SZ /d "Deny" /f > $null 2>&1
+    Reg.exe Add "HKCU\Software\Microsoft\Windows\CurrentVersion\DeviceAccess\Global\{7D7E8402-7C54-4821-A34E-AEEFD62DED93}" /v "Value" /t REG_SZ /d "Deny" /f > $null 2>&1
+    Reg.exe Add "HKCU\Software\Microsoft\Windows\CurrentVersion\DeviceAccess\Global\{D89823BA-7180-4B81-B50C-7E471E6121A3}" /v "Value" /t REG_SZ /d "Deny" /f > $null 2>&1
+    Reg.exe Add "HKCU\Software\Microsoft\Windows\CurrentVersion\DeviceAccess\Global\{8BC668CF-7728-45BD-93F8-CF2B3B41D7AB}" /v "Value" /t REG_SZ /d "Deny" /f > $null 2>&1
+    Reg.exe Add "HKCU\Software\Microsoft\Windows\CurrentVersion\DeviceAccess\Global\{9231CB4C-BF57-4AF3-8C55-FDA7BFCC04C5}" /v "Value" /t REG_SZ /d "Deny" /f > $null 2>&1
+    Reg.exe Add "HKCU\Software\Microsoft\Windows\CurrentVersion\DeviceAccess\Global\{E390DF20-07DF-446D-B962-F5C953062741}" /v "Value" /t REG_SZ /d "Deny" /f > $null 2>&1
+    Reg.exe Add "HKCU\Software\Microsoft\Windows\CurrentVersion\DeviceAccess\Global\{992AFA70-6F47-4148-B3E9-3003349C1548}" /v "Value" /t REG_SZ /d "Deny" /f > $null 2>&1
+    Reg.exe Add "HKLM\SOFTWARE\Policies\Microsoft\WMDRM" /v "DisableOnline" /t REG_DWORD /d "1" /f > $null 2>&1
+    Reg.exe Add "HKCU\Software\Microsoft\Windows\CurrentVersion\DeviceAccess\Global\{A8804298-2D5F-42E3-9531-9C8C39EB29CE}" /v "Value" /t REG_SZ /d "Deny" /f > $null 2>&1
+    Reg.exe Add "HKCU\Software\Microsoft\Windows\CurrentVersion\DeviceAccess\Global\LooselyCoupled" /v "Value" /t REG_SZ /d "Deny" /f > $null 2>&1
+    Reg.exe Add "HKLM\SOFTWARE\Microsoft\PolicyManager\current\device\Browser" /v "AllowAddressBarDropdown" /t REG_DWORD /d "0" /f > $null 2>&1
+    Reg.exe Add "HKLM\SOFTWARE\Microsoft\Speech_OneCore\Preferences" /v "ModelDownloadAllowed" /t REG_DWORD /d "0" /f > $null 2>&1
+    Reg.exe Add "HKLM\Software\Microsoft\InputPersonalization\TrainedDataStore" /v "HarvestContacts" /t REG_DWORD /d "0" /f > $null 2>&1
+    Reg.exe Add "HKLM\Software\Microsoft\InputPersonalization" /v "RestrictImplicitTextCollection" /t REG_DWORD /d "1" /f > $null 2>&1
+    Reg.exe Add "HKLM\Software\Microsoft\Personalization\Settings" /v "RestrictImplicitInkCollection" /t REG_DWORD /d "1" /f > $null 2>&1
+    Reg.exe Add "HKLM\Software\Microsoft\InputPersonalization" /v "RestrictImplicitInkCollection" /t REG_DWORD /d "1" /f > $null 2>&1
+    Reg.exe Add "HKLM\SOFTWARE\Microsoft\Personalization\Settings" /v "AcceptedPrivacyPolicy" /t REG_DWORD /d "0" /f > $null 2>&1
+    Reg.exe Add "HKLM\SOFTWARE\Policies\Microsoft\Windows\LocationAndSensors" /v "DisableWindowsLocationProvider" /t REG_DWORD /d "1" /f > $null 2>&1
+    Reg.exe Add "HKLM\SOFTWARE\Policies\Microsoft\Windows\LocationAndSensors" /v "DisableLocationScripting" /t REG_DWORD /d "1" /f > $null 2>&1
+    Reg.exe Add "HKLM\Software\Microsoft\Windows NT\CurrentVersion\Sensor\Overrides\{BFA794E4-F964-4FDB-90F6-51056BFE4B44}" /v "SensorPermissionState" /t REG_DWORD /d "0" /f > $null 2>&1
+    Reg.exe Add "HKLM\SOFTWARE\Microsoft\OneDrive" /v "PreventNetworkTrafficPreUserSignIn" /t REG_DWORD /d "1" /f > $null 2>&1
+    Reg.exe Add "HKLM\SOFTWARE\Policies\Microsoft\Windows Defender\Spynet" /v "SpyNetReporting" /t REG_DWORD /d "0" /f > $null 2>&1
+    Reg.exe Add "HKLM\SOFTWARE\Policies\Microsoft\Windows Defender\Spynet" /v "SubmitSamplesConsent" /t REG_DWORD /d "2" /f > $null 2>&1
+    Reg.exe Add "HKLM\SOFTWARE\Policies\Microsoft\MRT" /v "DontReportInfectionInformation" /t REG_DWORD /d "1" /f > $null 2>&1
+    Reg.exe Add "HKLM\Software\Microsoft\Siuf\Rules" /v "NumberOfSIUFInPeriod" /t REG_DWORD /d "0" /f > $null 2>&1
+    Reg.exe Add "HKLM\Software\Microsoft\Siuf\Rules" /v "PeriodInNanoSeconds" /t REG_DWORD /d "0" /f > $null 2>&1
 
     # Windows
-    Invoke-Expression -Command "fsutil behavior set disablecompression 1 > $null 2>&1"
-
-    $deepCStatesPaths = @(
-        "HKLM:\SYSTEM\CurrentControlSet\Control\Class\{4D36E968-E325-11CE-BFC1-08002BE10318}\0000",
-        "HKLM:\SYSTEM\CurrentControlSet\Control\Class\{4D36E968-E325-11CE-BFC1-08002BE10318}\0001",
-        "HKLM:\SYSTEM\CurrentControlSet\Control\Class\{4D36E968-E325-11CE-BFC1-08002BE10318}\0002",
-        "HKLM:\SYSTEM\CurrentControlSet\Control\Class\{4D36E968-E325-11CE-BFC1-08002BE10318}\0003"
-    )
-
-    foreach ($path in $deepCStatesPaths) {
-        Set-ItemProperty -Path $path -Name "AllowDeepCStates" -Value 0 -Type DWord -Force
-    }
-
-    Set-ItemProperty -Path "HKLM:\Software\Microsoft\FTH" -Name "Enabled" -Value 0 -Type DWord -Force
-    Set-ItemProperty -Path "HKLM:\Software\Policies\Microsoft\Windows\AppPrivacy" -Name "LetAppsRunInBackground" -Value 2 -Type DWord -Force
-    Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\BackgroundAccessApplications" -Name "GlobalUserDisabled" -Value 1 -Type DWord -Force
-    Set-ItemProperty -Path "HKLM:\Software\Microsoft\Windows\CurrentVersion\BackgroundAccessApplications" -Name "GlobalUserDisabled" -Value 1 -Type DWord -Force
-    Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Search" -Name "BackgroundAppGlobalToggle" -Value 0 -Type DWord -Force
-    Set-ItemProperty -Path "HKCU:\Control Panel\Desktop" -Name "ForegroundLockTimeout" -Value 150000 -Type DWord -Force
-    Set-ItemProperty -Path "HKCU:\Control Panel\Desktop" -Name "HungAppTimeout" -Value "1500" -Type String -Force
-    Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control" -Name "WaitToKillAppTimeout" -Value "1500" -Type String -Force
-    Set-ItemProperty -Path "HKCU:\Control Panel\Desktop" -Name "WaitToKillAppTimeout" -Value "1500" -Type String -Force
-    Set-ItemProperty -Path "HKCU:\Control Panel\Desktop" -Name "LowLevelHooksTimeout" -Value "1500" -Type String -Force
-    Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control" -Name "WaitToKillServiceTimeout" -Value "1500" -Type String -Force
-    Set-ItemProperty -Path "HKCU:\Control Panel\Desktop" -Name "AutoEndTasks" -Value "0" -Type String -Force
-    Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\CrashControl" -Name "CrashDumpEnabled" -Value 0 -Type DWord -Force
-    Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\CrashControl" -Name "AlwaysKeepMemoryDump" -Value 0 -Type DWord -Force
-
-    # Net accounts setting
-    Invoke-Expression -Command "net accounts /maxpwage:unlimited > $null 2>&1"
+    Fsutil behavior set disablecompression 1 > $null 2>&1
+    Reg.exe Add "HKLM\SYSTEM\CurrentControlSet\Control\Class\{4D36E968-E325-11CE-BFC1-08002BE10318}\0000" /v "AllowDeepCStates" /t REG_DWORD /d "0" /f > $null 2>&1
+    Reg.exe Add "HKLM\SYSTEM\CurrentControlSet\Control\Class\{4D36E968-E325-11CE-BFC1-08002BE10318}\0001" /v "AllowDeepCStates" /t REG_DWORD /d "0" /f > $null 2>&1
+    Reg.exe Add "HKLM\SYSTEM\CurrentControlSet\Control\Class\{4D36E968-E325-11CE-BFC1-08002BE10318}\0002" /v "AllowDeepCStates" /t REG_DWORD /d "0" /f > $null 2>&1
+    Reg.exe Add "HKLM\SYSTEM\CurrentControlSet\Control\Class\{4D36E968-E325-11CE-BFC1-08002BE10318}\0003" /v "AllowDeepCStates" /t REG_DWORD /d "0" /f > $null 2>&1
+    Reg.exe Add "HKLM\Software\Microsoft\FTH" /v "Enabled" /t REG_DWORD /d "0" /f > $null 2>&1
+    Reg.exe Add "HKLM\Software\Policies\Microsoft\Windows\AppPrivacy" /v "LetAppsRunInBackground" /t REG_DWORD /d "2" /f > $null 2>&1
+    Reg.exe Add "HKCU\Software\Microsoft\Windows\CurrentVersion\BackgroundAccessApplications" /v "GlobalUserDisabled" /t REG_DWORD /d "1" /f > $null 2>&1
+    Reg.exe Add "HKLM\Software\Microsoft\Windows\CurrentVersion\BackgroundAccessApplications" /v "GlobalUserDisabled" /t REG_DWORD /d "1" /f > $null 2>&1
+    Reg.exe Add "HKCU\Software\Microsoft\Windows\CurrentVersion\Search" /v "BackgroundAppGlobalToggle" /t REG_DWORD /d "0" /f > $null 2>&1
+    Reg.exe Add "HKCU\Control Panel\Desktop" /v "ForegroundLockTimeout" /t REG_DWORD /d "150000" /f > $null 2>&1
+    Reg.exe Add "HKCU\Control Panel\Desktop" /v "HungAppTimeout" /t REG_SZ /d "1500" /f > $null 2>&1
+    Reg.exe Add "HKLM\SYSTEM\CurrentControlSet\Control" /v "WaitToKillAppTimeout" /t REG_SZ /d "1500" /f > $null 2>&1
+    Reg.exe Add "HKCU\Control Panel\Desktop" /v "WaitToKillAppTimeout" /t REG_SZ /d "1500" /f > $null 2>&1
+    Reg.exe Add "HKCU\Control Panel\Desktop" /v "LowLevelHooksTimeout" /t REG_SZ /d "1500" /f > $null 2>&1
+    Reg.exe Add "HKLM\SYSTEM\CurrentControlSet\Control" /v "WaitToKillServiceTimeout" /t REG_SZ /d "1500" /f > $null 2>&1
+    Reg.exe Add "HKCU\Control Panel\Desktop" /v "AutoEndTasks" /t REG_SZ /d "0" /f > $null 2>&1
+    Reg.exe Add "HKLM\SYSTEM\CurrentControlSet\Control\CrashControl" /v "CrashDumpEnabled" /t REG_DWORD /d "0" /f > $null 2>&1
+    Reg.exe Add "HKLM\SYSTEM\CurrentControlSet\Control\CrashControl" /v "AlwaysKeepMemoryDump" /t REG_DWORD /d "0" /f > $null 2>&1
+    Net accounts /maxpwage:unlimited > $null 2>&1
 
     # Optimize AMD
     $registryKeys = Invoke-Expression -Command 'reg query "HKLM\System\CurrentControlSet\Control\Class\{4d36e968-e325-11ce-bfc1-08002be10318}" /t REG_SZ /s /e /f "AMD" | findstr "HKEY"'
     foreach ($key in $registryKeys) {
-        Set-ItemProperty -Path $key -Name "3D_Refresh_Rate_Override_DEF" -Value 0 -Type DWord -Force
-        Set-ItemProperty -Path $key -Name "3to2Pulldown_NA" -Value 0 -Type DWord -Force
-        Set-ItemProperty -Path $key -Name "AAF_NA" -Value 0 -Type DWord -Force
-        Set-ItemProperty -Path $key -Name "Adaptive De-interlacing" -Value 1 -Type DWord -Force
-        Set-ItemProperty -Path $key -Name "AllowRSOverlay" -Value "false" -Type String -Force
-        Set-ItemProperty -Path $key -Name "AllowSkins" -Value "false" -Type String -Force
-        Set-ItemProperty -Path $key -Name "AllowSnapshot" -Value 0 -Type DWord -Force
-        Set-ItemProperty -Path $key -Name "AllowSubscription" -Value 0 -Type DWord -Force
-        Set-ItemProperty -Path $key -Name "AntiAlias_NA" -Value "0" -Type String -Force
-        Set-ItemProperty -Path $key -Name "AreaAniso_NA" -Value "0" -Type String -Force
-        Set-ItemProperty -Path $key -Name "ASTT_NA" -Value "0" -Type String -Force
-        Set-ItemProperty -Path $key -Name "AutoColorDepthReduction_NA" -Value 0 -Type DWord -Force
-        Set-ItemProperty -Path $key -Name "DisableSAMUPowerGating" -Value 1 -Type DWord -Force
-        Set-ItemProperty -Path $key -Name "DisableUVDPowerGatingDynamic" -Value 1 -Type DWord -Force
-        Set-ItemProperty -Path $key -Name "DisableVCEPowerGating" -Value 1 -Type DWord -Force
-        Set-ItemProperty -Path $key -Name "EnableAspmL0s" -Value 0 -Type DWord -Force
-        Set-ItemProperty -Path $key -Name "EnableAspmL1" -Value 0 -Type DWord -Force
-        Set-ItemProperty -Path $key -Name "EnableUlps" -Value 0 -Type DWord -Force
-        Set-ItemProperty -Path $key -Name "EnableUlps_NA" -Value "0" -Type String -Force
-        Set-ItemProperty -Path $key -Name "KMD_DeLagEnabled" -Value 1 -Type DWord -Force
-        Set-ItemProperty -Path $key -Name "KMD_FRTEnabled" -Value 0 -Type DWord -Force
-        Set-ItemProperty -Path $key -Name "DisableDMACopy" -Value 1 -Type DWord -Force
-        Set-ItemProperty -Path $key -Name "DisableBlockWrite" -Value 0 -Type DWord -Force
-        Set-ItemProperty -Path $key -Name "StutterMode" -Value 0 -Type DWord -Force
-        Set-ItemProperty -Path $key -Name "PP_SclkDeepSleepDisable" -Value 1 -Type DWord -Force
-        Set-ItemProperty -Path $key -Name "PP_ThermalAutoThrottlingEnable" -Value 0 -Type DWord -Force
-        Set-ItemProperty -Path $key -Name "DisableDrmdmaPowerGating" -Value 1 -Type DWord -Force
-        Set-ItemProperty -Path $key -Name "KMD_EnableComputePreemption" -Value 0 -Type DWord -Force
-        Set-ItemProperty -Path "$key\UMD" -Name "Main3D_DEF" -Value "1" -Type String -Force
-        Set-ItemProperty -Path "$key\UMD" -Name "Main3D" -Value "3100" -Type Binary -Force
-        Set-ItemProperty -Path "$key\UMD" -Name "FlipQueueSize" -Value "3100" -Type Binary -Force
-        Set-ItemProperty -Path "$key\UMD" -Name "ShaderCache" -Value "3200" -Type Binary -Force
-        Set-ItemProperty -Path "$key\UMD" -Name "Tessellation_OPTION" -Value "3200" -Type Binary -Force
-        Set-ItemProperty -Path "$key\UMD" -Name "Tessellation" -Value "3100" -Type Binary -Force
-        Set-ItemProperty -Path "$key\UMD" -Name "VSyncControl" -Value "3000" -Type Binary -Force
-        Set-ItemProperty -Path "$key\UMD" -Name "TFQ" -Value "3200" -Type Binary -Force
-        Set-ItemProperty -Path "$key\DAL2_DATA__2_0\DisplayPath_4\EDID_D109_78E9\Option" -Name "ProtectionControl" -Value "0100000001000000" -Type Binary -Force
+        Reg Add "$key" /v "3D_Refresh_Rate_Override_DEF" /t Reg_DWORD /d "0" /f > $null 2>&1
+        Reg Add "$key" /v "3to2Pulldown_NA" /t Reg_DWORD /d "0" /f > $null 2>&1
+        Reg Add "$key" /v "AAF_NA" /t Reg_DWORD /d "0" /f > $null 2>&1
+        Reg Add "$key" /v "Adaptive De-interlacing" /t Reg_DWORD /d "1" /f > $null 2>&1
+        Reg Add "$key" /v "AllowRSOverlay" /t Reg_SZ /d "false" /f > $null 2>&1
+        Reg Add "$key" /v "AllowSkins" /t Reg_SZ /d "false" /f > $null 2>&1
+        Reg Add "$key" /v "AllowSnapshot" /t Reg_DWORD /d "0" /f > $null 2>&1
+        Reg Add "$key" /v "AllowSubscription" /t Reg_DWORD /d "0" /f > $null 2>&1
+        Reg Add "$key" /v "AntiAlias_NA" /t Reg_SZ /d "0" /f > $null 2>&1
+        Reg Add "$key" /v "AreaAniso_NA" /t Reg_SZ /d "0" /f > $null 2>&1
+        Reg Add "$key" /v "ASTT_NA" /t Reg_SZ /d "0" /f > $null 2>&1
+        Reg Add "$key" /v "AutoColorDepthReduction_NA" /t Reg_DWORD /d "0" /f > $null 2>&1
+        Reg Add "$key" /v "DisableSAMUPowerGating" /t Reg_DWORD /d "1" /f > $null 2>&1
+        Reg Add "$key" /v "DisableUVDPowerGatingDynamic" /t Reg_DWORD /d "1" /f > $null 2>&1
+        Reg Add "$key" /v "DisableVCEPowerGating" /t Reg_DWORD /d "1" /f > $null 2>&1
+        Reg Add "$key" /v "EnableAspmL0s" /t Reg_DWORD /d "0" /f > $null 2>&1
+        Reg Add "$key" /v "EnableAspmL1" /t Reg_DWORD /d "0" /f > $null 2>&1
+        Reg Add "$key" /v "EnableUlps" /t Reg_DWORD /d "0" /f > $null 2>&1
+        Reg Add "$key" /v "EnableUlps_NA" /t Reg_SZ /d "0" /f > $null 2>&1
+        Reg Add "$key" /v "KMD_DeLagEnabled" /t Reg_DWORD /d "1" /f > $null 2>&1
+        Reg Add "$key" /v "KMD_FRTEnabled" /t Reg_DWORD /d "0" /f > $null 2>&1
+        Reg Add "$key" /v "DisableDMACopy" /t Reg_DWORD /d "1" /f > $null 2>&1
+        Reg Add "$key" /v "DisableBlockWrite" /t Reg_DWORD /d "0" /f > $null 2>&1
+        Reg Add "$key" /v "StutterMode" /t Reg_DWORD /d "0" /f > $null 2>&1
+        Reg Add "$key" /v "EnableUlps" /t Reg_DWORD /d "0" /f > $null 2>&1
+        Reg Add "$key" /v "PP_SclkDeepSleepDisable" /t Reg_DWORD /d "1" /f > $null 2>&1
+        Reg Add "$key" /v "PP_ThermalAutoThrottlingEnable" /t Reg_DWORD /d "0" /f > $null 2>&1
+        Reg Add "$key" /v "DisableDrmdmaPowerGating" /t Reg_DWORD /d "1" /f > $null 2>&1
+        Reg Add "$key" /v "KMD_EnableComputePreemption" /t Reg_DWORD /d "0" /f > $null 2>&1
+        Reg Add "$key\UMD" /v "Main3D_DEF" /t Reg_SZ /d "1" /f > $null 2>&1
+        Reg Add "$key\UMD" /v "Main3D" /t Reg_BINARY /d "3100" /f > $null 2>&1
+        Reg Add "$key\UMD" /v "FlipQueueSize" /t Reg_BINARY /d "3100" /f > $null 2>&1
+        Reg Add "$key\UMD" /v "ShaderCache" /t Reg_BINARY /d "3200" /f > $null 2>&1
+        Reg Add "$key\UMD" /v "Tessellation_OPTION" /t Reg_BINARY /d "3200" /f > $null 2>&1
+        Reg Add "$key\UMD" /v "Tessellation" /t Reg_BINARY /d "3100" /f > $null 2>&1
+        Reg Add "$key\UMD" /v "VSyncControl" /t Reg_BINARY /d "3000" /f > $null 2>&1
+        Reg Add "$key\UMD" /v "TFQ" /t Reg_BINARY /d "3200" /f > $null 2>&1
+        Reg Add "$key\DAL2_DATA__2_0\DisplayPath_4\EDID_D109_78E9\Option" /v "ProtectionControl" /t Reg_BINARY /d "0100000001000000" /f > $null 2>&1
     }
 
     # BCD Edit Settings
-    $bcdCommands = @(
-        "bcdedit /set tscsyncpolicy enhanced",
-        "bcdedit /timeout 0",
-        "bcdedit /set bootux disabled",
-        "bcdedit /set bootmenupolicy standard",
-        "bcdedit /set quietboot yes",
-        "bcdedit /set nx alwaysoff",
-        "bcdedit /set hypervisorlaunchtype off",
-        "bcdedit /set vsmlaunchtype Off",
-        "bcdedit /set vm No",
-        "bcdedit /set x2apicpolicy Enable",
-        "bcdedit /set uselegacyapicmode No",
-        "bcdedit /set configaccesspolicy Default",
-        "bcdedit /set usephysicaldestination No",
-        "bcdedit /set usefirmwarepcisettings No",
-        "bcdedit /set disabledynamictick yes",
-        "bcdedit /deletevalue useplatformclock"
-        )
-
-    foreach ($command in $bcdCommands) {
-        Invoke-Expression -Command "$command > $null 2>&1"
-    }
+    BCDEdit /set tscsyncpolicy enhanced > $null 2>&1
+    BCDEdit /timeout 0 > $null 2>&1
+    BCDEdit /set bootux disabled > $null 2>&1
+    BCDEdit /set bootmenupolicy standard > $null 2>&1
+    BCDEdit /set quietboot yes > $null 2>&1
+    BCDEdit /set nx alwaysoff > $null 2>&1
+    BCDEdit /set hypervisorlaunchtype off > $null 2>&1
+    BCDEdit /set vsmlaunchtype Off > $null 2>&1
+    BCDEdit /set vm No > $null 2>&1
+    BCDEdit /set x2apicpolicy Enable > $null 2>&1
+    BCDEdit /set uselegacyapicmode No > $null 2>&1
+    BCDEdit /set configaccesspolicy Default > $null 2>&1
+    BCDEdit /set usephysicaldestination No > $null 2>&1
+    BCDEdit /set usefirmwarepcisettings No > $null 2>&1
+    BCDEdit /set disabledynamictick yes > $null 2>&1
+    BCDEdit /deletevalue useplatformclock > $null 2>&1
 
     # CSRSS Realtime priority
-    Set-ItemProperty -Path "HKLM:\Software\Microsoft\Windows NT\CurrentVersion\Image File Execution Options\csrss.exe\PerfOptions" -Name "CpuPriorityClass" -Value 4 -Type DWord -Force
-    Set-ItemProperty -Path "HKLM:\Software\Microsoft\Windows NT\CurrentVersion\Image File Execution Options\csrss.exe\PerfOptions" -Name "IoPriority" -Value 3 -Type DWord -Force
+    Reg Add "HKLM\Software\Microsoft\Windows NT\CurrentVersion\Image File Execution Options\csrss.exe\PerfOptions" /v CpuPriorityClass /t Reg_DWORD /d "4" /f > $null
+    Reg Add "HKLM\Software\Microsoft\Windows NT\CurrentVersion\Image File Execution Options\csrss.exe\PerfOptions" /v IoPriority /t Reg_DWORD /d "3" /f > $null
 
     # Device Affinity
     $NumberOfCores = (Get-WmiObject Win32_Processor | Select-Object -ExpandProperty NumberOfCores)
@@ -860,180 +819,203 @@ function Tweaks {
 
     if ($NumberOfCores -gt 4) {
         # More Than 4 Cores
+        # AllProcessorsInMachine
+        # No Mask
         Get-WmiObject Win32_VideoController | ForEach-Object {
             if ($_.PNPDeviceID -like "*PCI\VEN_*") {
-                Set-ItemProperty -Path "HKLM:\System\CurrentControlSet\Enum\$($_.PNPDeviceID)\Device Parameters\Interrupt Management\Affinity Policy" -Name "DevicePolicy" -Value 3 -Type DWord -Force
-                Remove-ItemProperty -Path "HKLM:\System\CurrentControlSet\Enum\$($_.PNPDeviceID)\Device Parameters\Interrupt Management\Affinity Policy" -Name "AssignmentSetOverride" -Force
+            Reg Add "HKLM\System\CurrentControlSet\Enum\$($_.PNPDeviceID)\Device Parameters\Interrupt Management\Affinity Policy" /v "DevicePolicy" /t REG_DWORD /d "3" /f > $null 2>&1
+            Reg Delete "HKLM\System\CurrentControlSet\Enum\$($_.PNPDeviceID)\Device Parameters\Interrupt Management\Affinity Policy" /v "AssignmentSetOverride" /f > $null 2>&1
             }
         }
+        # SpreadMessagesAcrossAllProcessors
+        # No Mask
         Get-WmiObject Win32_NetworkAdapter | ForEach-Object {
             if ($_.PNPDeviceID -like "*PCI\VEN_*") {
-                Set-ItemProperty -Path "HKLM:\System\CurrentControlSet\Enum\$($_.PNPDeviceID)\Device Parameters\Interrupt Management\Affinity Policy" -Name "DevicePolicy" -Value 5 -Type DWord -Force
-                Remove-ItemProperty -Path "HKLM:\System\CurrentControlSet\Enum\$($_.PNPDeviceID)\Device Parameters\Interrupt Management\Affinity Policy" -Name "AssignmentSetOverride" -Force
+            Reg Add "HKLM\System\CurrentControlSet\Enum\$($_.PNPDeviceID)\Device Parameters\Interrupt Management\Affinity Policy" /v "DevicePolicy" /t REG_DWORD /d "5" /f > $null 2>&1
+            Reg Delete "HKLM\System\CurrentControlSet\Enum\$($_.PNPDeviceID)\Device Parameters\Interrupt Management\Affinity Policy" /v "AssignmentSetOverride" /f > $null 2>&1
             }
         }
     } elseif (($NumberOfThreads -ne $NumberOfCores) -and ($NumberOfCores -gt 2)) {
         # 3-4 cores, Hyperthreading ON
+        # SpecifiedProcessors
+        # CPU 6-7
         Get-WmiObject Win32_USBController | ForEach-Object {
             if ($_.PNPDeviceID -like "*PCI\VEN_*") {
-                Set-ItemProperty -Path "HKLM:\System\CurrentControlSet\Enum\$($_.PNPDeviceID)\Device Parameters\Interrupt Management\Affinity Policy" -Name "DevicePolicy" -Value 4 -Type DWord -Force
-                Set-ItemProperty -Path "HKLM:\System\CurrentControlSet\Enum\$($_.PNPDeviceID)\Device Parameters\Interrupt Management\Affinity Policy" -Name "AssignmentSetOverride" -Value ([byte[]](0xC0)) -Type Binary -Force
+                Reg Add "HKLM\System\CurrentControlSet\Enum\$($_.PNPDeviceID)\Device Parameters\Interrupt Management\Affinity Policy" /v "DevicePolicy" /t REG_DWORD /d "4" /f > $null 2>&1
+                Reg Add "HKLM\System\CurrentControlSet\Enum\$($_.PNPDeviceID)\Device Parameters\Interrupt Management\Affinity Policy" /v "AssignmentSetOverride" /t REG_BINARY /d "C0" /f > $null
             }
         }
+        # SpecifiedProcessors
+        # CPU 6-7
         Get-WmiObject Win32_VideoController | ForEach-Object {
             if ($_.PNPDeviceID -like "*PCI\VEN_*") {
-                Set-ItemProperty -Path "HKLM:\System\CurrentControlSet\Enum\$($_.PNPDeviceID)\Device Parameters\Interrupt Management\Affinity Policy" -Name "DevicePolicy" -Value 4 -Type DWord -Force
-                Set-ItemProperty -Path "HKLM:\System\CurrentControlSet\Enum\$($_.PNPDeviceID)\Device Parameters\Interrupt Management\Affinity Policy" -Name "AssignmentSetOverride" -Value ([byte[]](0xC0)) -Type Binary -Force
+                Reg Add "HKLM\System\CurrentControlSet\Enum\$($_.PNPDeviceID)\Device Parameters\Interrupt Management\Affinity Policy" /v "DevicePolicy" /t REG_DWORD /d "4" /f > $null 2>&1
+                Reg Add "HKLM\System\CurrentControlSet\Enum\$($_.PNPDeviceID)\Device Parameters\Interrupt Management\Affinity Policy" /v "AssignmentSetOverride" /t REG_BINARY /d "C0" /f > $null
             }
         }
+        # SpecifiedProcessors
+        # CPU 4-5
         Get-WmiObject Win32_NetworkAdapter | ForEach-Object {
             if ($_.PNPDeviceID -like "*PCI\VEN_*") {
-                Set-ItemProperty -Path "HKLM:\System\CurrentControlSet\Enum\$($_.PNPDeviceID)\Device Parameters\Interrupt Management\Affinity Policy" -Name "DevicePolicy" -Value 4 -Type DWord -Force
-                Set-ItemProperty -Path "HKLM:\System\CurrentControlSet\Enum\$($_.PNPDeviceID)\Device Parameters\Interrupt Management\Affinity Policy" -Name "AssignmentSetOverride" -Value ([byte[]](0x30)) -Type Binary -Force
+                Reg Add "HKLM\System\CurrentControlSet\Enum\$($_.PNPDeviceID)\Device Parameters\Interrupt Management\Affinity Policy" /v "DevicePolicy" /t REG_DWORD /d "4" /f > $null 2>&1
+                Reg Add "HKLM\System\CurrentControlSet\Enum\$($_.PNPDeviceID)\Device Parameters\Interrupt Management\Affinity Policy" /v "AssignmentSetOverride" /t REG_BINARY /d "30" /f > $null
             }
         }
     } else {
         # 1-4 cores, Hyperthreading OFF
+        # SpecifiedProcessors
+        # CPU 3
         Get-WmiObject Win32_USBController | ForEach-Object {
             if ($_.PNPDeviceID -like "*PCI\VEN_*") {
-                Set-ItemProperty -Path "HKLM:\System\CurrentControlSet\Enum\$($_.PNPDeviceID)\Device Parameters\Interrupt Management\Affinity Policy" -Name "DevicePolicy" -Value 4 -Type DWord -Force
-                Set-ItemProperty -Path "HKLM:\System\CurrentControlSet\Enum\$($_.PNPDeviceID)\Device Parameters\Interrupt Management\Affinity Policy" -Name "AssignmentSetOverride" -Value ([byte[]](0x08)) -Type Binary -Force
+                Reg Add "HKLM\System\CurrentControlSet\Enum\$($_.PNPDeviceID)\Device Parameters\Interrupt Management\Affinity Policy" /v "DevicePolicy" /t REG_DWORD /d "4" /f > $null 2>&1
+                Reg Add "HKLM\System\CurrentControlSet\Enum\$($_.PNPDeviceID)\Device Parameters\Interrupt Management\Affinity Policy" /v "AssignmentSetOverride" /t REG_BINARY /d "08" /f > $null
             }
         }
+        # SpecifiedProcessors
+        # CPU 1
         Get-WmiObject Win32_VideoController | ForEach-Object {
             if ($_.PNPDeviceID -like "*PCI\VEN_*") {
-                Set-ItemProperty -Path "HKLM:\System\CurrentControlSet\Enum\$($_.PNPDeviceID)\Device Parameters\Interrupt Management\Affinity Policy" -Name "DevicePolicy" -Value 4 -Type DWord -Force
-                Set-ItemProperty -Path "HKLM:\System\CurrentControlSet\Enum\$($_.PNPDeviceID)\Device Parameters\Interrupt Management\Affinity Policy" -Name "AssignmentSetOverride" -Value ([byte[]](0x02)) -Type Binary -Force
+                Reg Add "HKLM\System\CurrentControlSet\Enum\$($_.PNPDeviceID)\Device Parameters\Interrupt Management\Affinity Policy" /v "DevicePolicy" /t REG_DWORD /d "4" /f > $null 2>&1
+                Reg Add "HKLM\System\CurrentControlSet\Enum\$($_.PNPDeviceID)\Device Parameters\Interrupt Management\Affinity Policy" /v "AssignmentSetOverride" /t REG_BINARY /d "02" /f > $null
             }
         }
+        # SpecifiedProcessors
+        # CPU 2
         Get-WmiObject Win32_NetworkAdapter | ForEach-Object {
             if ($_.PNPDeviceID -like "*PCI\VEN_*") {
-                Set-ItemProperty -Path "HKLM:\System\CurrentControlSet\Enum\$($_.PNPDeviceID)\Device Parameters\Interrupt Management\Affinity Policy" -Name "DevicePolicy" -Value 4 -Type DWord -Force
-                Set-ItemProperty -Path "HKLM:\System\CurrentControlSet\Enum\$($_.PNPDeviceID)\Device Parameters\Interrupt Management\Affinity Policy" -Name "AssignmentSetOverride" -Value ([byte[]](0x04)) -Type Binary -Force
+                Reg Add "HKLM\System\CurrentControlSet\Enum\$($_.PNPDeviceID)\Device Parameters\Interrupt Management\Affinity Policy" /v "DevicePolicy" /t REG_DWORD /d "4" /f > $null 2>&1
+                Reg Add "HKLM\System\CurrentControlSet\Enum\$($_.PNPDeviceID)\Device Parameters\Interrupt Management\Affinity Policy" /v "AssignmentSetOverride" /t REG_BINARY /d "04" /f > $null
             }
         }
     }
 
     # Drives
-    Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System" -Name "RunStartupScriptSync" -Value 0 -Type DWord -Force
-    Invoke-Expression -Command "DISM /Online /Set-ReservedStorageState /State:Disabled > $null 2>&1"
-    Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\FileSystem" -Name "NtfsDisable8dot3NameCreation" -Value 1 -Type DWord -Force
-    Invoke-Expression -Command "fsutil behavior set encryptpagingfile 0 > $null 2>&1"
-    Invoke-Expression -Command "fsutil behavior set mftzone 2 > $null 2>&1"
-    Invoke-Expression -Command "fsutil behavior set disable8dot3 1 > $null 2>&1"
-    Invoke-Expression -Command "fsutil behavior set disabledeletenotify 0 > $null 2>&1"
-    Try { Set-PhysicalDisk -DeviceID "0" -MediaType RemovableDisk -Usage WriteCache } Catch {}
-    Try { Set-PhysicalDisk -DeviceID "1" -MediaType RemovableDisk -Usage WriteCache } Catch {}
-    Try { Set-PhysicalDisk -DeviceID "2" -MediaType RemovableDisk -Usage WriteCache } Catch {}
-    Try { Set-PhysicalDisk -DeviceID "3" -MediaType RemovableDisk -Usage WriteCache } Catch {}
-    Try { Set-PhysicalDisk -DeviceID "4" -MediaType RemovableDisk -Usage WriteCache } Catch {}
-    Try { Get-PhysicalDisk | Where-Object {$_.MediaType -eq "Fixed"} | Set-PhysicalDisk -WriteCacheEnabled $true } Catch {}
+    Reg.exe Add "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System" /v "RunStartupScriptSync" /t REG_DWORD /d "0" /f > $null 2>&1
+    DISM /Online /Set-ReservedStorageState /State:Disabled > $null 2>&1
+    Reg.exe Add "HKLM\SYSTEM\CurrentControlSet\Control\FileSystem" /v "NtfsDisable8dot3NameCreation" /t REG_DWORD /d "1" /f > $null 2>&1
+    Fsutil behavior set encryptpagingfile 0 > $null 2>&1
+    Fsutil behavior set mftzone 2 > $null 2>&1
+    Fsutil behavior set disable8dot3 1  > $null 2>&1
+    Fsutil behavior set disabledeletenotify 0 > $null 2>&1
+    Try{
+    Set-PhysicalDisk -DeviceID "0" -MediaType RemovableDisk -Usage WriteCache
+    } Catch{}
+    Try{
+    Set-PhysicalDisk -DeviceID "1" -MediaType RemovableDisk -Usage WriteCache
+    } Catch{}
+    Try{
+    Set-PhysicalDisk -DeviceID "2" -MediaType RemovableDisk -Usage WriteCache
+    } Catch{}
+    Try{
+    Set-PhysicalDisk -DeviceID "3" -MediaType RemovableDisk -Usage WriteCache
+    } Catch{}
+    Try{
+    Set-PhysicalDisk -DeviceID "4" -MediaType RemovableDisk -Usage WriteCache
+    } Catch{}
+    Try{
+    Get-PhysicalDisk | Where-Object {$_.MediaType -eq "Fixed"} | Set-PhysicalDisk -WriteCacheEnabled $true
+    } Catch{}
 
     # iGPU
-    $registryKeys = Invoke-Expression -Command 'reg query "HKLM\System\CurrentControlSet\Control\Class\{4d36e968-e325-11ce-bfc1-08002be10318}" /t REG_SZ /s /e /f "Intel" | findstr "HKEY"'
+    $registryKeys = Invoke-Expression -Command 'reg query "HKLM\System\CurrentControlSet\Control\Class\{4d36e968-e325-11ce-bfc1-08002be10318}" /t REG_SZ /s /e /f "Intel" | findstr "HKEY" > $null 2>&1'
     foreach ($key in $registryKeys) {
-        Set-ItemProperty -Path $key -Name "Disable_OverlayDSQualityEnhancement" -Value 1 -Type DWord -Force
-        Set-ItemProperty -Path $key -Name "IncreaseFixedSegment" -Value 1 -Type DWord -Force
-        Set-ItemProperty -Path $key -Name "AdaptiveVsyncEnable" -Value 0 -Type DWord -Force
-        Set-ItemProperty -Path $key -Name "DisablePFonDP" -Value 1 -Type DWord -Force
-        Set-ItemProperty -Path $key -Name "EnableCompensationForDVI" -Value 1 -Type DWord -Force
-        Set-ItemProperty -Path $key -Name "NoFastLinkTrainingForeDP" -Value 0 -Type DWord -Force
-        Set-ItemProperty -Path $key -Name "ACPowerPolicyVersion" -Value 16898 -Type DWord -Force
-        Set-ItemProperty -Path $key -Name "DCPowerPolicyVersion" -Value 16642 -Type DWord -Force
+        Reg.exe Add "$key" /v "Disable_OverlayDSQualityEnhancement" /t REG_DWORD /d "1" /f > $null 2>&1
+        Reg.exe Add "$key" /v "IncreaseFixedSegment" /t REG_DWORD /d "1" /f > $null 2>&1
+        Reg.exe Add "$key" /v "AdaptiveVsyncEnable" /t REG_DWORD /d "0" /f > $null 2>&1
+        Reg.exe Add "$key" /v "DisablePFonDP" /t REG_DWORD /d "1" /f > $null 2>&1
+        Reg.exe Add "$key" /v "EnableCompensationForDVI" /t REG_DWORD /d "1" /f > $null 2>&1
+        Reg.exe Add "$key" /v "NoFastLinkTrainingForeDP" /t REG_DWORD /d "0" /f > $null 2>&1
+        Reg.exe Add "$key" /v "ACPowerPolicyVersion" /t REG_DWORD /d "16898" /f > $null 2>&1
+        Reg.exe Add "$key" /v "DCPowerPolicyVersion" /t REG_DWORD /d "16642" /f > $null 2>&1
     }
-    Set-ItemProperty -Path "HKLM:\SOFTWARE\Intel\GMM" -Name "DedicatedSegmentSize" -Value 512 -Type DWord -Force
-
+    Reg.exe Add "HKLM\SOFTWARE\Intel\GMM" /v "DedicatedSegmentSize" /t REG_DWORD /d "512" /f > $null 2>&1
+    
     # Optimize I/O operations
     $ram = Get-WmiObject -Class Win32_ComputerSystem | Select-Object -ExpandProperty TotalPhysicalMemory -ErrorAction SilentlyContinue
     $IOPageLimit = ((($ram / 1GB) * 1024) * 1024) * 128
-    Set-ItemProperty -Path "HKLM:\System\CurrentControlSet\Control\Session Manager\Memory Management" -Name "IOPageLockLimit" -Value $IOPageLimit -Type DWord -Force
-    Invoke-Expression -Command "fsutil behavior set disablelastaccess 1 > $null 2>&1"
+    Reg.exe Add "HKLM\System\CurrentControlSet\Control\Session Manager\Memory Management" /v "IOPageLockLimit" /t REG_DWORD /d "$IOPageLimit" /f > $null 2>&1
+    Fsutil behavior set disablelastaccess 1 > $null 2>&1
 
     # Set JPEG Wallpaper quality to 100%
-    Set-ItemProperty -Path "HKCU:\Control Panel\Desktop" -Name "JPEGImportQuality" -Value 100 -Type DWord -Force
+    Reg.exe Add "HKCU\Control Panel\Desktop" /v "JPEGImportQuality" /t REG_DWORD /d "100" /f > $null
 
     # Optimize Memory Management
-    Invoke-Expression -Command "fsutil behavior set memoryusage 2 > $null 2>&1"
-    Set-ItemProperty -Path "HKLM:\System\CurrentControlSet\Control\Session Manager\Memory Management" -Name "SystemPages" -Value 4294967295 -Type DWord -Force
-    Set-ItemProperty -Path "HKLM:\System\CurrentControlSet\Control\Session Manager\Memory Management" -Name "DisablePagingExecutive" -Value 1 -Type DWord -Force
-    Set-ItemProperty -Path "HKLM:\System\CurrentControlSet\Control" -Name "SvcHostSplitThresholdInKB" -Value 4294967295 -Type DWord -Force
+    Fsutil behavior set memoryusage 2 > $null 2>&1
+    Reg.exe Add "HKLM\System\CurrentControlSet\Control\Session Manager\Memory Management" /v "SystemPages" /t REG_DWORD /d "4294967295" /f > $null 2>&1
+    Reg.exe Add "HKLM\System\CurrentControlSet\Control\Session Manager\Memory Management" /v "DisablePagingExecutive" /t REG_DWORD /d "1" /f > $null 2>&1
+    Reg.exe Add "HKLM\System\CurrentControlSet\Control" /v "SvcHostSplitThresholdInKB" /t REG_DWORD /d "4294967295" /f > $null 2>&1
     Disable-MMAgent -MemoryCompression -ErrorAction SilentlyContinue
     Disable-MMAgent -PageCombining -ErrorAction SilentlyContinue
-    Set-ItemProperty -Path "HKLM:\System\CurrentControlSet\Control\Session Manager\Memory Management" -Name "DisablePageCombining" -Value 1 -Type DWord -Force
-    Set-ItemProperty -Path "HKLM:\System\CurrentControlSet\Control\Session Manager" -Name "HeapDeCommitFreeBlockThreshold" -Value 262144 -Type DWord -Force
+    Reg.exe Add "HKLM\System\CurrentControlSet\Control\Session Manager\Memory Management" /v "DisablePageCombining" /t REG_DWORD /d "1" /f > $null 2>&1
+    Reg.exe Add "HKLM\System\CurrentControlSet\Control\Session Manager" /v "HeapDeCommitFreeBlockThreshold" /t REG_DWORD /d "262144" /f > $null 2>&1
 
     # Message signals interrupts
     Get-WmiObject -Class Win32_NetworkAdapter | Where-Object { $_.PNPDeviceID -like "*VEN_*" } | ForEach-Object {
-        $path = "HKLM:\System\CurrentControlSet\Enum\$($_.PNPDeviceID)\Device Parameters\Interrupt Management\MessageSignaledInterruptProperties"
-        Set-ItemProperty -Path $path -Name "MSISupported" -Value 1 -Type DWord -Force
+        $path = "HKLM\System\CurrentControlSet\Enum\$($_.PNPDeviceID)\Device Parameters\Interrupt Management\MessageSignaledInterruptProperties"
+        Reg Add "$path" /v "MSISupported" /t REG_DWORD /d "1" /f > $null 2>&1
     }
-
+    
     Get-WmiObject -Class Win32_VideoController | Where-Object { $_.PNPDeviceID -like "*VEN_*" } | ForEach-Object {
-        $path = "HKLM:\System\CurrentControlSet\Enum\$($_.PNPDeviceID)\Device Parameters\Interrupt Management\MessageSignaledInterruptProperties"
-        Set-ItemProperty -Path $path -Name "MSISupported" -Value 1 -Type DWord -Force
+        $path = "HKLM\System\CurrentControlSet\Enum\$($_.PNPDeviceID)\Device Parameters\Interrupt Management\MessageSignaledInterruptProperties"
+        Reg Add "$path" /v "MSISupported" /t REG_DWORD /d "1" /f > $null 2>&1
     }
 
     # Network Settings
-    $networkCommands = @(
-        "netsh int tcp set global dca=enabled",
-        "netsh int tcp set global netdma=enabled",
-        "netsh int isatap set state disabled",
-        "netsh int tcp set global timestamps=disabled",
-        "netsh int tcp set global rss=enabled",
-        "netsh int tcp set global nonsackrttresiliency=disabled",
-        "netsh int tcp set global initialRto=2000",
-        "netsh int tcp set supplemental template=custom icw=10",
-        "netsh int ip set interface ethernet currenthoplimit=64"
-    )
-    foreach ($command in $networkCommands) {
-        Invoke-Expression -Command "$command > $null 2>&1"
-    }
+    Netsh int tcp set global dca=enabled > $null 2>&1
+    Netsh int tcp set global netdma=enabled > $null 2>&1
+    Netsh int isatap set state disabled > $null 2>&1
+    Netsh int tcp set global timestamps=disabled > $null 2>&1
+    Netsh int tcp set global rss=enabled > $null 2>&1
+    Netsh int tcp set global nonsackrttresiliency=disabled > $null 2>&1
+    Netsh int tcp set global initialRto=2000 > $null 2>&1
+    Netsh int tcp set supplemental template=custom icw=10 > $null 2>&1
+    Netsh int ip set interface ethernet currenthoplimit=64 > $null 2>&1
 
     # Network Card Optimizations
-    foreach ($line in (Invoke-Expression -Command "reg query 'HKLM\Software\Microsoft\Windows NT\CurrentVersion\NetworkCards' /k /v /f 'Description' /s /e | findstr /ri 'REG_SZ'")) {
+    foreach ($line in (reg query "HKLM\Software\Microsoft\Windows NT\CurrentVersion\NetworkCards" /k /v /f "Description" /s /e | findstr /ri "REG_SZ")) {
         $line = ($line -split 'REG_SZ')[1].Trim()
-        foreach ($result in (Invoke-Expression -Command "reg query 'HKLM\System\CurrentControlSet\Control\Class\{4d36e972-e325-11ce-bfc1-08002be10318}' /s /f '$line' /d | findstr /C:'HKEY'")) {
-            Set-ItemProperty -Path $result -Name "MIMOPowerSaveMode" -Value 3 -Type String -Force
-            Set-ItemProperty -Path $result -Name "PowerSavingMode" -Value 0 -Type String -Force
-            Set-ItemProperty -Path $result -Name "EnableGreenEthernet" -Value 0 -Type String -Force
-            Set-ItemProperty -Path $result -Name "*EEE" -Value 0 -Type String -Force
-            Set-ItemProperty -Path $result -Name "EnableConnectedPowerGating" -Value 0 -Type DWord -Force
-            Set-ItemProperty -Path $result -Name "EnableDynamicPowerGating" -Value 0 -Type String -Force
-            Set-ItemProperty -Path $result -Name "EnableSavePowerNow" -Value 0 -Type String -Force
-            Set-ItemProperty -Path $result -Name "PnPCapabilities" -Value 24 -Type DWord -Force
-            Set-ItemProperty -Path $result -Name "*NicAutoPowerSaver" -Value 0 -Type String -Force
-            Set-ItemProperty -Path $result -Name "ULPMode" -Value 0 -Type String -Force
-            Set-ItemProperty -Path $result -Name "EnablePME" -Value 0 -Type String -Force
-            Set-ItemProperty -Path $result -Name "AlternateSemaphoreDelay" -Value 0 -Type String -Force
-            Set-ItemProperty -Path $result -Name "AutoPowerSaveModeEnabled" -Value 0 -Type String -Force
+        foreach ($result in (reg query "HKLM\System\CurrentControlSet\Control\Class\{4d36e972-e325-11ce-bfc1-08002be10318}" /s /f $line /d | findstr /C:"HKEY")) {
+            reg add $result /v "MIMOPowerSaveMode" /t REG_SZ /d "3" /f > $null 2>&1
+            reg add $result /v "PowerSavingMode" /t REG_SZ /d "0" /f > $null 2>&1
+            reg add $result /v "EnableGreenEthernet" /t REG_SZ /d "0" /f > $null 2>&1
+            reg add $result /v "*EEE" /t REG_SZ /d "0" /f > $null 2>&1
+            reg add $result /v "EnableConnectedPowerGating" /t REG_DWORD /d "0" /f > $null 2>&1
+            reg add $result /v "EnableDynamicPowerGating" /t REG_SZ /d "0" /f > $null 2>&1
+            reg add $result /v "EnableSavePowerNow" /t REG_SZ /d "0" /f > $null 2>&1
+            reg add $result /v "PnPCapabilities" /t REG_DWORD /d "24" /f > $null 2>&1
+            reg add $result /v "*NicAutoPowerSaver" /t REG_SZ /d "0" /f > $null 2>&1
+            reg add $result /v "ULPMode" /t REG_SZ /d "0" /f > $null 2>&1
+            reg add $result /v "EnablePME" /t REG_SZ /d "0" /f > $null 2>&1
+            reg add $result /v "AlternateSemaphoreDelay" /t REG_SZ /d "0" /f > $null 2>&1
+            reg add $result /v "AutoPowerSaveModeEnabled" /t REG_SZ /d "0" /f > $null 2>&1
         }
     }
 
     # Explorer Optimizations
-    Set-ItemProperty -Path "HKLM:\Software\Microsoft\Windows NT\CurrentVersion\Winlogon" -Name "AutoRestartShell" -Value 1 -Type DWord -Force
-    Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\FileSystem" -Name "LongPathsEnabled" -Value 0 -Type DWord -Force
-    Set-ItemProperty -Path "HKCU:\Control Panel\Desktop" -Name "MenuShowDelay" -Value "0" -Type String -Force
-    Set-ItemProperty -Path "HKCU:\Control Panel\Mouse" -Name "MouseHoverTime" -Value "0" -Type String -Force
-    Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name "ListviewShadow" -Value 0 -Type DWord -Force
-    Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name "NoNetCrawling" -Value 1 -Type DWord -Force
-    Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name "EnableBalloonTips" -Value 0 -Type DWord -Force
-    Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Policies\Explorer" -Name "NoLowDiskSpaceChecks" -Value 1 -Type DWord -Force
-    Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Policies\Explorer" -Name "LinkResolveIgnoreLinkInfo" -Value 1 -Type DWord -Force
-    Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Policies\Explorer" -Name "NoResolveSearch" -Value 1 -Type DWord -Force
-    Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Policies\Explorer" -Name "NoResolveTrack" -Value 1 -Type DWord -Force
-    Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Policies\Explorer" -Name "NoInternetOpenWith" -Value 1 -Type DWord -Force
-    Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name "DisallowShaking" -Value 1 -Type DWord -Force
-    Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name "HideFileExt" -Value 0 -Type DWord -Force
-    Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\AutoComplete" -Name "Append Completion" -Value "yes" -Force
-    Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\AutoComplete" -Name "AutoSuggest" -Value "yes" -Force
-    Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\GraphicsDrivers" -Name "TdrDelay" -Value 10 -Type DWord -Force
-    Set-ItemProperty -Path "HKCU:\Control Panel\Desktop\WindowMetrics" -Name "MinAnimate" -Value "0" -Type String -Force
-    Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\AeDebug" -Name "Auto" -Value "0" -Type String -Force
+    Reg.exe Add "HKLM\Software\Microsoft\Windows NT\CurrentVersion\Winlogon" /v "AutoRestartShell" /t REG_DWORD /d "1" /f > $null 2>&1
+    Reg.exe Add "HKLM\SYSTEM\CurrentControlSet\Control\FileSystem" /v "LongPathsEnabled" /t REG_DWORD /d "0" /f > $null 2>&1
+    Reg.exe Add "HKCU\Control Panel\Desktop" /v "MenuShowDelay" /t REG_SZ /d "0" /f > $null 2>&1
+    Reg.exe Add "HKCU\Control Panel\Mouse" /v "MouseHoverTime" /t REG_SZ /d "0" /f > $null 2>&1
+    Reg.exe Add "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" /v "ListviewShadow" /t REG_DWORD /d "0" /f > $null 2>&1
+    Reg.exe Add "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" /v "NoNetCrawling" /t REG_DWORD /d "1" /f > $null 2>&1
+    Reg.exe Add "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" /v "EnableBalloonTips" /t REG_DWORD /d "0" /f > $null 2>&1
+    Reg.exe Add "HKCU\Software\Microsoft\Windows\CurrentVersion\Policies\Explorer" /v "NoLowDiskSpaceChecks" /t REG_DWORD /d "1" /f > $null 2>&1
+    Reg.exe Add "HKCU\Software\Microsoft\Windows\CurrentVersion\Policies\Explorer" /v "LinkResolveIgnoreLinkInfo" /t REG_DWORD /d "1" /f > $null 2>&1
+    Reg.exe Add "HKCU\Software\Microsoft\Windows\CurrentVersion\Policies\Explorer" /v "NoResolveSearch" /t REG_DWORD /d "1" /f > $null 2>&1
+    Reg.exe Add "HKCU\Software\Microsoft\Windows\CurrentVersion\Policies\Explorer" /v "NoResolveTrack" /t REG_DWORD /d "1" /f > $null 2>&1
+    Reg.exe Add "HKCU\Software\Microsoft\Windows\CurrentVersion\Policies\Explorer" /v "NoInternetOpenWith" /t REG_DWORD /d "1" /f > $null 2>&1
+    Reg.exe Add "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" /v "DisallowShaking" /t REG_DWORD /d "1" /f > $null 2>&1
+    Reg.exe Add "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" /v "HideFileExt" /t REG_DWORD /d "0" /f > $null 2>&1
+    Reg.exe Add "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\AutoComplete" /v "Append Completion" /d "yes" /f > $null 2>&1
+    Reg.exe Add "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\AutoComplete" /v "AutoSuggest" /d "yes" /f > $null 2>&1
+    Reg.exe Add "HKLM\SYSTEM\CurrentControlSet\Control\GraphicsDrivers" /v "TdrDelay" /t REG_DWORD /d "10" /f > $null 2>&1
+    Reg.exe Add "HKCU\Control Panel\Desktop\WindowMetrics" /v "MinAnimate" /t REG_SZ /d "0" /f > $null 2>&1
+    Reg.exe Add "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\AeDebug" /v "Auto" /t REG_SZ /d "0" /f > $null 2>&1
 
     # Disable Network Bandwidth Limiters
-    Set-ItemProperty -Path "HKLM:\Software\Policies\Microsoft\Windows\Psched" -Name "NonBestEffortLimit" -Value 0 -Type DWord -Force
-    Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Multimedia\SystemProfile" -Name "NetworkThrottlingIndex" -Value 10 -Type DWord -Force
-
+    Reg.exe Add "HKLM\Software\Policies\Microsoft\Windows\Psched" /v "NonBestEffortLimit" /t REG_DWORD /d "0" /f > $null 2>&1
+    Reg.exe Add "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Multimedia\SystemProfile" /v "NetworkThrottlingIndex" /t REG_DWORD /d "10" /f > $null 2>&1
+    
 }
 
 
